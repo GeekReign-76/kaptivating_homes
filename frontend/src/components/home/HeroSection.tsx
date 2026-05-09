@@ -1,36 +1,32 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useRouter }        from 'next/navigation';
 import Image                from 'next/image';
-import { Search }           from 'lucide-react';
-import { Button }           from '@/components/ui/button';
+import { Search }                   from 'lucide-react';
+import { Button }                   from '@/components/ui/button';
+import { PropertyInterestPrompt }   from '@/components/listings/PropertyInterestPrompt';
 
 export function HeroSection() {
-  const router  = useRouter();
-  const [zip, setZip]     = useState('');
-  const [error, setError] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+  const router   = useRouter();
+  const [query, setQuery] = useState('');
+  const inputRef  = useRef<HTMLInputElement>(null);
+  const armRef    = useRef<((ctx: string) => void) | null>(null);
+  const onArm     = useCallback((fn: (ctx: string) => void) => { armRef.current = fn; }, []);
 
   function handleSearch(e?: React.FormEvent) {
     e?.preventDefault();
-    const trimmed = zip.trim();
-
-    if (trimmed && !/^\d{5}$/.test(trimmed)) {
-      setError('Please enter a valid 5-digit zip code');
-      inputRef.current?.focus();
-      return;
-    }
-
-    setError('');
+    const trimmed = query.trim();
     if (trimmed) {
-      router.push(`/listings?zip=${trimmed}`);
+      armRef.current?.(`Browsing listings: "${trimmed}"`);
+      router.push(`/listings?q=${encodeURIComponent(trimmed)}`);
     } else {
       router.push('/listings');
     }
   }
 
   return (
+    <>
     <section className="relative min-h-[85vh] flex items-center">
       {/* Background image */}
       <Image
@@ -76,12 +72,9 @@ export function HeroSection() {
             <input
               ref={inputRef}
               type="text"
-              inputMode="numeric"
-              pattern="\d*"
-              maxLength={5}
-              value={zip}
-              onChange={e => { setZip(e.target.value); setError(''); }}
-              placeholder="Enter a zip code — or browse all"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="City, neighborhood, address, or zip code"
               className="flex-1 py-3 text-sm text-neutral-800 placeholder:text-neutral-400 outline-none bg-transparent"
             />
           </div>
@@ -89,10 +82,6 @@ export function HeroSection() {
             Search
           </Button>
         </form>
-
-        {error && (
-          <p className="text-red-300 text-sm mt-2">{error}</p>
-        )}
 
         {/* Stats */}
         <div className="flex items-center justify-center gap-8 mt-12 text-white/90">
@@ -109,5 +98,8 @@ export function HeroSection() {
         </div>
       </div>
     </section>
+
+    <PropertyInterestPrompt onArm={onArm} />
+    </>
   );
 }

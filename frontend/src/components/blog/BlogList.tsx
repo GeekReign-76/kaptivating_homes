@@ -19,7 +19,11 @@ export function BlogList({ posts }: BlogListProps) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
       {posts.map((post: any) => (
         <article key={post.id} className="group">
-          <Link href={`/blog/${post.slug}`}>
+          <Link
+            href={post.source === 'wordpress' ? post.external_url : `/blog/${post.slug}`}
+            target={post.source === 'wordpress' ? '_blank' : undefined}
+            rel={post.source === 'wordpress' ? 'noopener noreferrer' : undefined}
+          >
             <div className="relative aspect-video rounded-xl overflow-hidden bg-neutral-100 mb-4">
               {post.cover_image_url ? (
                 <Image
@@ -33,10 +37,13 @@ export function BlogList({ posts }: BlogListProps) {
                 <div className="absolute inset-0 bg-gradient-to-br from-brand-100 to-brand-200" />
               )}
             </div>
-            <div className="flex gap-2 mb-2 flex-wrap">
+            <div className="flex gap-2 mb-2 flex-wrap items-center">
               {(post.tags ?? []).slice(0, 2).map((tag: string) => (
                 <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
               ))}
+              {post.source === 'wordpress' && (
+                <span className="text-xs text-neutral-400 ml-auto">↗ Full article</span>
+              )}
             </div>
             <h2 className="font-serif font-bold text-neutral-900 text-xl leading-snug group-hover:text-brand-600 transition-colors mb-2">
               {post.title}

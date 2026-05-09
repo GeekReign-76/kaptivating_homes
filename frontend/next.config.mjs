@@ -29,6 +29,16 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'd3euvzua2sc52.cloudfront.net',
       },
+      {
+        // WordPress.com hosted blog images
+        protocol: 'https',
+        hostname: '*.wordpress.com',
+      },
+      {
+        // Keeping Current Matters (KCM) content images used in Karsten's blog
+        protocol: 'https',
+        hostname: 'files.keepingcurrentmatters.com',
+      },
     ],
   },
 

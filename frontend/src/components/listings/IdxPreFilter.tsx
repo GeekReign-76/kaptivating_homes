@@ -2,11 +2,14 @@
 
 const IDX_BASE = 'https://matrix.canopymls.com/Matrix/Public/IDXMap.aspx?count=1&idx=d95436b2';
 
-export function IdxPreFilter() {
+interface IdxPreFilterProps {
+  src?: string; // override the default IDX src (e.g. KW proxy URL)
+}
+
+export function IdxPreFilter({ src }: IdxPreFilterProps) {
   return (
     <iframe
-      name="mls-iframe"
-      src={IDX_BASE}
+      src={src ?? IDX_BASE}
       width="100%"
       height="100%"
       frameBorder="0"

@@ -2,15 +2,12 @@ import Link          from 'next/link';
 import Image         from 'next/image';
 import { Badge }     from '@/components/ui/badge';
 import { ArrowRight, Clock } from 'lucide-react';
-import { api }       from '@/lib/apiClient';
-import { formatDate } from '@/lib/utils';
+import { fetchWordPressPosts } from '@/lib/wordpressFeed';
+import { formatDate }          from '@/lib/utils';
 
 export async function BlogPreview() {
-  let posts: any[] = [];
-  try {
-    const res: any = await api.blog.list({ limit: 3 });
-    posts = res.data ?? res ?? [];
-  } catch { /* no-op */ }
+  const wpPosts = await fetchWordPressPosts();
+  const posts   = wpPosts.slice(0, 3);
 
   if (posts.length === 0) return null;
 
@@ -28,9 +25,13 @@ export async function BlogPreview() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posts.map((post: any) => (
+          {posts.map((post) => (
             <article key={post.id} className="group">
-              <Link href={`/blog/${post.slug}`}>
+              <Link
+                href={post.external_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <div className="relative aspect-video rounded-xl overflow-hidden bg-neutral-100 mb-4">
                   {post.cover_image_url ? (
                     <Image
@@ -45,7 +46,7 @@ export async function BlogPreview() {
                   )}
                 </div>
                 <div className="flex gap-2 mb-2 flex-wrap">
-                  {(post.tags ?? []).slice(0, 2).map((tag: string) => (
+                  {post.tags.slice(0, 2).map((tag) => (
                     <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
                   ))}
                 </div>
@@ -56,16 +57,20 @@ export async function BlogPreview() {
                   <p className="text-sm text-neutral-500 line-clamp-2 mb-3">{post.excerpt}</p>
                 )}
                 <div className="flex items-center gap-3 text-xs text-neutral-400">
-                  {post.read_time_minutes && (
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {post.read_time_minutes} min read
-                    </span>
-                  )}
-                  {post.published_at && <span>{formatDate(post.published_at)}</span>}
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> {post.read_time_minutes} min read
+                  </span>
+                  <span>{formatDate(post.published_at)}</span>
                 </div>
               </Link>
             </article>
           ))}
+        </div>
+
+        <div className="mt-8 text-center sm:hidden">
+          <Link href="/blog" className="text-sm text-brand-500 hover:text-brand-700 font-medium flex items-center justify-center gap-1">
+            View All Posts <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>

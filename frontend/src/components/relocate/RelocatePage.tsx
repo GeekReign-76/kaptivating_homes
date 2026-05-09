@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { MapPin, Utensils, ShoppingBag, Heart, CalendarDays, ArrowRight, Plane, Building2, Globe2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PropertyInterestPrompt } from '@/components/listings/PropertyInterestPrompt';
 
 // ---------------------------------------------------------------------------
 // Data
@@ -33,6 +34,8 @@ type Community = {
   events: string[];
   mlsCity: string;
   mlsZip: string;
+  // KW search viewport: northLat,eastLng,southLat,westLng
+  kwViewport: string;
 };
 
 const COMMUNITIES: Community[] = [
@@ -68,6 +71,7 @@ const COMMUNITIES: Community[] = [
     events: ['Festival of India (September, Ballantyne)', 'Regional Festival of India (April, Stumptown Park)', 'Diwali Festival of Lights (October)', 'India Association cultural concerts'],
     mlsCity: 'Charlotte',
     mlsZip: '28277',
+    kwViewport: '35.075,-80.830,35.005,-80.935',
   },
   {
     id: 'hispanic',
@@ -100,6 +104,7 @@ const COMMUNITIES: Community[] = [
     events: ['Empanada Fest (April)', 'Charlotte International Arts Festival (September)', 'Fiesta Patrias celebrations (September)'],
     mlsCity: 'Charlotte',
     mlsZip: '28205',
+    kwViewport: '35.255,-80.770,35.185,-80.870',
   },
   {
     id: 'vietnamese',
@@ -134,6 +139,7 @@ const COMMUNITIES: Community[] = [
     events: ['Vietnamese New Year (Tet) celebrations', 'Mid-Autumn Festival', 'Charlotte International Arts Festival'],
     mlsCity: 'Charlotte',
     mlsZip: '28205',
+    kwViewport: '35.250,-80.770,35.180,-80.870',
   },
   {
     id: 'korean',
@@ -167,6 +173,7 @@ const COMMUNITIES: Community[] = [
     events: ['Korean New Year (Seollal)', 'Chuseok Harvest Festival', 'AsiaCarolinas CLTure Day'],
     mlsCity: 'Matthews',
     mlsZip: '28105',
+    kwViewport: '35.150,-80.695,35.080,-80.785',
   },
   {
     id: 'african',
@@ -199,6 +206,7 @@ const COMMUNITIES: Community[] = [
     events: ['Charlotte International Arts Festival', 'African Heritage Month events', 'Various national independence day celebrations'],
     mlsCity: 'Charlotte',
     mlsZip: '28212',
+    kwViewport: '35.240,-80.745,35.170,-80.845',
   },
   {
     id: 'filipino',
@@ -230,6 +238,7 @@ const COMMUNITIES: Community[] = [
     events: ['Philippine Independence Day celebration (June)', 'Fiesta celebrations', 'AsiaCarolinas CLTure Day + Night Market'],
     mlsCity: 'Pineville',
     mlsZip: '28134',
+    kwViewport: '35.105,-80.875,35.035,-80.975',
   },
   {
     id: 'middleeastern',
@@ -262,6 +271,7 @@ const COMMUNITIES: Community[] = [
     events: ['Eid al-Fitr community celebrations', 'Eid al-Adha gatherings', 'Ramadan iftars open to community', 'Islamic Heritage Month events'],
     mlsCity: 'Charlotte',
     mlsZip: '28210',
+    kwViewport: '35.175,-80.820,35.105,-80.920',
   },
   {
     id: 'chinese',
@@ -292,6 +302,7 @@ const COMMUNITIES: Community[] = [
     events: ['Lunar New Year Celebration (February)', 'Mid-Autumn Moon Festival', 'Charlotte International Arts Festival', 'CAAOC cultural programs'],
     mlsCity: 'Charlotte',
     mlsZip: '28277',
+    kwViewport: '35.075,-80.830,35.005,-80.935',
   },
   {
     id: 'european',
@@ -324,6 +335,7 @@ const COMMUNITIES: Community[] = [
     events: ['Oktoberfest Charlotte (September)', 'St. Patrick\'s Day parade and events', 'Charlotte International Arts Festival', 'Japanese Spring Festival (March)'],
     mlsCity: 'Charlotte',
     mlsZip: '28203',
+    kwViewport: '35.225,-80.830,35.155,-80.930',
   },
 ];
 
@@ -347,6 +359,10 @@ const FILTERS = [
 export function RelocatePage() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [expanded,     setExpanded]     = useState<string | null>(null);
+  const armPromptRef = useRef<((context: string) => void) | null>(null);
+  const onArm = useCallback((fn: (context: string) => void) => {
+    armPromptRef.current = fn;
+  }, []);
 
   const visible = activeFilter === 'all'
     ? COMMUNITIES
@@ -562,12 +578,15 @@ export function RelocatePage() {
                         >
                           Schedule a Consultation
                         </Link>
-                        <Link
-                          href={`/listings?city=${encodeURIComponent(community.mlsCity)}&zip=${community.mlsZip}`}
+                        <a
+                          href={`https://karstenmiller.kw.com/search/sale?q=${encodeURIComponent(`${community.neighborhoods[0]}, ${community.mlsCity}, NC`)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => armPromptRef.current?.(`${community.neighborhoods[0]}, ${community.mlsCity} — ${community.name} community`)}
                           className={cn('inline-flex items-center gap-1.5 text-sm font-semibold border px-4 py-2 rounded-lg transition-colors hover:bg-white/60', community.color, community.border)}
                         >
                           Browse Listings <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
+                        </a>
                       </div>
                     </div>
                   </div>
@@ -613,6 +632,8 @@ export function RelocatePage() {
           </div>
         </div>
       </section>
+
+      <PropertyInterestPrompt onArm={onArm} />
     </div>
   );
 }

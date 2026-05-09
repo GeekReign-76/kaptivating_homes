@@ -86,6 +86,142 @@ appointmentsRouter.get('/appointment-types', async (_req: Request, res: Response
 });
 
 // -------------------------------------------------------------------------
+// POST /api/v1/appointments/public-book
+// PUBLIC — no auth required.
+// Accepts name + email + context, creates/finds the user, creates a pending
+// appointment request, and notifies Karsten. Designed for first-time visitors
+// who discovered a property and want to book a showing or consultation.
+// -------------------------------------------------------------------------
+
+appointmentsRouter.post('/public-book', async (req: Request, res: Response) => {
+  const {
+    name,
+    email,
+    phone,
+    appointment_type,   // 'buyer_consultation' | 'property_showing' | 'relocation_consultation'
+    preferred_date,     // ISO date string e.g. "2026-06-15"
+    preferred_time,     // 'morning' | 'afternoon' | 'evening' | 'flexible'
+    property_url,
+    search_context,
+    note,
+  } = req.body;
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ data: null, error: { code: 'VALIDATION_ERROR', message: 'Valid email required' } });
+  }
+  if (!appointment_type) {
+    return res.status(400).json({ data: null, error: { code: 'VALIDATION_ERROR', message: 'appointment_type required' } });
+  }
+
+  try {
+    // 1. Upsert user by email
+    const { data: existing } = await db
+      .from('users')
+      .select('id')
+      .eq('email', email.toLowerCase())
+      .maybeSingle();
+
+    let userId = existing?.id;
+
+    if (!userId) {
+      const { data: newUser, error: userErr } = await db
+        .from('users')
+        .insert({ email: email.toLowerCase(), full_name: name ?? null, phone: phone ?? null, role: 'client' })
+        .select('id')
+        .single();
+      if (userErr || !newUser) throw new Error(userErr?.message ?? 'Failed to create user');
+      userId = newUser.id;
+    } else {
+      // Fill in any missing profile fields
+      const updates: Record<string, any> = {};
+      if (name)  updates.full_name = name;
+      if (phone) updates.phone     = phone;
+      if (Object.keys(updates).length) {
+        await db.from('users').update(updates).eq('id', userId);
+      }
+    }
+
+    // 2. Upsert lead record
+    const { data: existingLead } = await db
+      .from('leads')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (!existingLead) {
+      await db.from('leads').insert({
+        user_id: userId,
+        status:  'warm',
+        source:  'appointment_request',
+        notes:   [
+          search_context ? `Context: ${search_context}` : null,
+          property_url   ? `Property: ${property_url}`  : null,
+          note           ? `Note: ${note}`               : null,
+        ].filter(Boolean).join(' | ') || null,
+      });
+    }
+
+    // 3. Build the appointment notes string
+    const appointmentNotes = [
+      search_context ? `Browsing context: ${search_context}` : null,
+      property_url   ? `Property of interest: ${property_url}` : null,
+      preferred_date ? `Preferred date: ${preferred_date} (${preferred_time ?? 'flexible'})` : null,
+      note           ? `Client note: ${note}` : null,
+    ].filter(Boolean).join('\n');
+
+    // 4. Look up the appointment type id by slug/name
+    const { data: apptType } = await db
+      .from('appointment_types')
+      .select('id, duration_minutes')
+      .ilike('name', `%${appointment_type.replace(/_/g, ' ')}%`)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    // 5. Create a pending appointment (no confirmed time yet — agent will confirm)
+    const requestedStart = preferred_date
+      ? new Date(`${preferred_date}T12:00:00`)
+      : (() => { const d = new Date(); d.setDate(d.getDate() + 3); return d; })();
+    const durationMs = (apptType?.duration_minutes ?? 60) * 60 * 1000;
+    const requestedEnd = new Date(requestedStart.getTime() + durationMs);
+
+    const { data: appointment, error: apptErr } = await db
+      .from('appointments')
+      .insert({
+        client_id:        userId,
+        appointment_type: appointment_type,
+        status:           'pending',
+        requested_start:  requestedStart.toISOString(),
+        requested_end:    requestedEnd.toISOString(),
+        notes:            appointmentNotes || null,
+      })
+      .select()
+      .single();
+
+    if (apptErr || !appointment) throw new Error(apptErr?.message ?? 'Failed to create appointment');
+
+    // 6. Notify agent
+    const agentUserId = process.env.AGENT_USER_ID;
+    if (agentUserId) {
+      const displayName  = name ? `${name} (${email})` : email;
+      const typeLabel    = appointment_type.replace(/_/g, ' ');
+      const dateLabel    = preferred_date ? ` for ${preferred_date}` : '';
+      await db.from('notifications').insert({
+        user_id:  agentUserId,
+        type:     'new_appointment',
+        title:    'New Appointment Request',
+        body:     `${displayName} requested a ${typeLabel}${dateLabel}.${property_url ? ' Has a property in mind.' : ''}`,
+        metadata: { appointment_id: appointment.id, user_id: userId, source: 'public_booking' },
+        channel:  'push',
+      }).catch(() => {});
+    }
+
+    return res.status(201).json({ data: { booked: true, appointment_id: appointment.id }, error: null });
+  } catch (err: any) {
+    return res.status(500).json({ data: null, error: { code: 'SERVER_ERROR', message: err.message } });
+  }
+});
+
+// -------------------------------------------------------------------------
 // POST /api/v1/appointments
 // Requires auth (client) — book a slot or suggest a time
 // -------------------------------------------------------------------------

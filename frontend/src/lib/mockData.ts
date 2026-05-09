@@ -401,48 +401,9 @@ export const MOCK_SLOTS = [
 // Blog Posts
 // -------------------------------------------------------------------------
 
-export const MOCK_BLOG_POSTS = [
-  {
-    id: 'blg-001',
-    title: "Charleston's Hottest Neighborhoods in 2024",
-    slug: 'charlestons-hottest-neighborhoods-2024',
-    excerpt: 'From the cobblestone streets of the French Quarter to the waterfront charm of Mount Pleasant, here are the neighborhoods every buyer should know.',
-    cover_image_url: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1200',
-    tags: ['market-update', 'charleston', 'neighborhoods'],
-    status: 'published',
-    published_at: '2024-05-15T12:00:00Z',
-    read_time_minutes: 5,
-    content_html: `
-      <p>Charleston's real estate market continues to attract buyers from across the country, and for good reason. The city's blend of history, culture, and coastal lifestyle is unmatched on the East Coast.</p>
-      <h2>The French Quarter</h2>
-      <p>The historic French Quarter remains one of the most sought-after areas in all of South Carolina. Properties here rarely stay on the market more than 30 days, and prices have increased 12% year-over-year.</p>
-      <h2>Mount Pleasant</h2>
-      <p>Just across the Cooper River from downtown, Mount Pleasant offers waterfront living with easy access to the city. The Shem Creek area is especially popular with buyers looking for dock access.</p>
-      <h2>Isle of Palms</h2>
-      <p>For those dreaming of oceanfront living, Isle of Palms delivers. From modest beach cottages to multi-million dollar estates, there is something for every buyer at every price point.</p>
-    `,
-  },
-  {
-    id: 'blg-002',
-    title: "First-Time Homebuyer's Guide to the SC Lowcountry",
-    slug: 'first-time-homebuyer-guide-sc-lowcountry',
-    excerpt: "Everything you need to know before making your first real estate purchase in the South Carolina Lowcountry — from financing to closing day.",
-    cover_image_url: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200',
-    tags: ['first-time-buyers', 'guide', 'south-carolina'],
-    status: 'published',
-    published_at: '2024-04-20T09:00:00Z',
-    read_time_minutes: 8,
-    content_html: `
-      <p>Buying your first home is one of the biggest decisions you'll ever make. In the Lowcountry, there are a few unique factors to consider that can make the process smoother.</p>
-      <h2>Get Pre-Approved First</h2>
-      <p>In the current market, most sellers won't even consider an offer without a pre-approval letter. Work with a local lender who understands the Charleston market.</p>
-      <h2>Understand Flood Zones</h2>
-      <p>Much of the Lowcountry falls within FEMA flood zones. Make sure you understand the flood insurance requirements for any property you're considering — it can significantly impact your monthly payment.</p>
-      <h2>Working with an Agent</h2>
-      <p>As your agent, I work exclusively in your interest throughout the process — from identifying the right neighborhoods to negotiating the best possible price.</p>
-    `,
-  },
-];
+// Blog posts come from WordPress RSS feed (fetched server-side in blog/page.tsx)
+// and from the in-app editor once Supabase is connected.
+export const MOCK_BLOG_POSTS: any[] = [];
 
 // -------------------------------------------------------------------------
 // Leads
