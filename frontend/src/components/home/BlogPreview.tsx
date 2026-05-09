@@ -1,0 +1,73 @@
+import Link          from 'next/link';
+import Image         from 'next/image';
+import { Badge }     from '@/components/ui/badge';
+import { ArrowRight, Clock } from 'lucide-react';
+import { api }       from '@/lib/apiClient';
+import { formatDate } from '@/lib/utils';
+
+export async function BlogPreview() {
+  let posts: any[] = [];
+  try {
+    const res: any = await api.blog.list({ limit: 3 });
+    posts = res.data ?? res ?? [];
+  } catch { /* no-op */ }
+
+  if (posts.length === 0) return null;
+
+  return (
+    <section className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-end justify-between mb-10">
+          <div>
+            <p className="text-brand-500 text-sm font-semibold uppercase tracking-wide mb-1">Insights</p>
+            <h2 className="font-serif text-3xl font-bold text-neutral-900">From The Blog</h2>
+          </div>
+          <Link href="/blog" className="hidden sm:flex items-center gap-1 text-sm text-brand-500 hover:text-brand-700 font-medium">
+            View All <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {posts.map((post: any) => (
+            <article key={post.id} className="group">
+              <Link href={`/blog/${post.slug}`}>
+                <div className="relative aspect-video rounded-xl overflow-hidden bg-neutral-100 mb-4">
+                  {post.cover_image_url ? (
+                    <Image
+                      src={post.cover_image_url}
+                      alt={post.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-brand-100" />
+                  )}
+                </div>
+                <div className="flex gap-2 mb-2 flex-wrap">
+                  {(post.tags ?? []).slice(0, 2).map((tag: string) => (
+                    <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+                  ))}
+                </div>
+                <h3 className="font-serif font-bold text-neutral-900 text-lg leading-snug group-hover:text-brand-600 transition-colors mb-2">
+                  {post.title}
+                </h3>
+                {post.excerpt && (
+                  <p className="text-sm text-neutral-500 line-clamp-2 mb-3">{post.excerpt}</p>
+                )}
+                <div className="flex items-center gap-3 text-xs text-neutral-400">
+                  {post.read_time_minutes && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {post.read_time_minutes} min read
+                    </span>
+                  )}
+                  {post.published_at && <span>{formatDate(post.published_at)}</span>}
+                </div>
+              </Link>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

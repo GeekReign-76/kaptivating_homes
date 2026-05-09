@@ -1,0 +1,153 @@
+###############################################################
+# ci.yml — runs on every push and PR to main
+#
+# Jobs:
+#   backend-check  — TypeScript typecheck + lint
+#   frontend-check — TypeScript typecheck + Next.js lint
+#
+# On merge to main:
+#   deploy-backend  — Docker build + push to Railway
+#   deploy-frontend — Docker build + push to Vercel (or Railway)
+###############################################################
+
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+
+  # ── Backend ─────────────────────────────────────────────────
+  backend-check:
+    name: Backend — typecheck & lint
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+  # ── Frontend ─────────────────────────────────────────────────
+  frontend-check:
+    name: Frontend — typecheck & lint
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+  # ── Deploy Backend (Railway) ─────────────────────────────────
+  deploy-backend:
+    name: Deploy backend to Railway
+    needs: [backend-check]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy API service
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway up --service backend --detach
+
+      - name: Deploy Workers service
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway up --service workers --detach
+
+  # ── Deploy Supabase Migrations ───────────────────────────────
+  deploy-database:
+    name: Run Supabase migrations
+    needs: [backend-check, frontend-check]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Run migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD:  ${{ secrets.SUPABASE_DB_PASSWORD }}
+          PROJECT_ID:            ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          supabase link --project-ref $PROJECT_ID
+          supabase db push
+
+  # ── Deploy Frontend (Vercel) ──────────────────────────────────
+  # NOTE: Vercel can't run Socket.io, so the backend must be Railway/Render.
+  # Frontend is stateless Next.js — Vercel handles it perfectly.
+  deploy-frontend:
+    name: Deploy frontend to Vercel
+    needs: [frontend-check]
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN:   ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID:  ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          cd frontend
+          vercel --prod --token=$VERCEL_TOKEN

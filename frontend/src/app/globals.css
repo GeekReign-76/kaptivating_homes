@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white text-neutral-900;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  /* TipTap / blog editor content styles */
+  .tiptap-content h1 { @apply text-3xl font-serif font-bold mb-4 text-neutral-900; }
+  .tiptap-content h2 { @apply text-2xl font-serif font-semibold mb-3 text-neutral-900; }
+  .tiptap-content h3 { @apply text-xl font-serif font-semibold mb-2 text-neutral-900; }
+  .tiptap-content p  { @apply mb-4 leading-relaxed text-neutral-700; }
+  .tiptap-content ul { @apply list-disc pl-6 mb-4 text-neutral-700; }
+  .tiptap-content ol { @apply list-decimal pl-6 mb-4 text-neutral-700; }
+  .tiptap-content li { @apply mb-1; }
+  .tiptap-content a  { @apply text-brand-600 hover:text-brand-700 underline; }
+  .tiptap-content img { @apply rounded-xl w-full object-cover my-6; }
+  .tiptap-content blockquote {
+    @apply border-l-4 border-brand-300 pl-4 italic text-neutral-500 my-6;
+  }
+  .tiptap-content code {
+    @apply bg-neutral-100 text-neutral-800 rounded px-1 py-0.5 text-sm font-mono;
+  }
+  .tiptap-content pre {
+    @apply bg-neutral-900 text-neutral-100 rounded-xl p-4 my-4 overflow-x-auto text-sm font-mono;
+  }
+  .tiptap-content pre code { @apply bg-transparent text-inherit p-0; }
+  .tiptap-content hr { @apply border-neutral-200 my-8; }
+  /* Placeholder */
+  .tiptap-content p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    @apply text-neutral-400 pointer-events-none;
+    float: left;
+    height: 0;
+  }
+}

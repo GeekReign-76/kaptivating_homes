@@ -1,0 +1,304 @@
+
+		<head>
+			<style type="text/css" media="screen">
+				body,html{font-family:var(--markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", system-ui, "Ubuntu", "Droid Sans", sans-serif);font-size:var(--markdown-font-size,14px);padding:0 26px;line-height:var(--markdown-line-height,22px);word-wrap:break-word}body{padding-top:1em}h1,h2,h3,h4,h5,h6,ol,p,pre,ul{margin-top:0}h2,h3,h4,h5,h6{font-weight:400;margin-bottom:.2em}img{max-width:100%;max-height:100%}a{text-decoration:none}a:hover{text-decoration:underline}a:focus,input:focus,select:focus,textarea:focus{outline:1px solid -webkit-focus-ring-color;outline-offset:-1px}p{margin-bottom:.7em}ol,ul{margin-bottom:.7em}hr{border:0;height:2px;border-bottom:2px solid}h1{padding-bottom:.3em;line-height:1.2;border-bottom-width:1px;border-bottom-style:solid;font-weight:400}table{border-collapse:collapse}th{text-align:left;border-bottom:1px solid}td,th{padding:5px 10px}table>tbody>tr+tr>td{border-top:1px solid}blockquote{margin:0 7px 0 5px;padding:0 16px 0 10px;border-left-width:5px;border-left-style:solid}code{font-family:var(--vscode-editor-font-family, "SF Mono", Monaco, Menlo, Consolas, "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace);font-size:1em;line-height:1.357em}body.wordWrap pre{white-space:pre-wrap}pre.hljs code>div,pre:not(.hljs){padding:16px;border-radius:3px;overflow:auto}pre code{color:var(--vscode-editor-foreground);tab-size:4}
+			</style>
+		</head>
+		<body>
+			<h1 id="how-this-works-----kaptivating-homes-platform">How This Works  -  Kaptivating Homes Platform</h1>
+<p>A plain-English guide to every part of the system, written for the agent and anyone onboarding to the project.</p>
+<hr>
+<h2 id="what-this-is">What This Is</h2>
+<p>A full real estate web platform built specifically for one agent. It handles everything a buyer or seller touches  -  searching properties, booking showings, messaging the agent, and reading blog posts  -  plus a private dashboard where the agent manages all of it.</p>
+<hr>
+<h2 id="the-two-sides-of-the-app">The Two Sides of the App</h2>
+<h3 id="public-site-what-buyers-see">Public Site (what buyers see)</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/</code></td>
+<td>Home page  -  hero search bar, featured listings, about section, latest blog posts, contact form</td>
+</tr>
+<tr>
+<td><code>/listings</code></td>
+<td>Browse and filter all properties (state, price, beds/baths, type)</td>
+</tr>
+<tr>
+<td><code>/listings/[id]</code></td>
+<td>Full property detail  -  photo gallery, specs, map, contact/book button</td>
+</tr>
+<tr>
+<td><code>/blog</code></td>
+<td>All published blog posts</td>
+</tr>
+<tr>
+<td><code>/blog/[slug]</code></td>
+<td>Individual post</td>
+</tr>
+<tr>
+<td><code>/auth/register</code></td>
+<td>Create an account</td>
+</tr>
+<tr>
+<td><code>/auth/login</code></td>
+<td>Sign in</td>
+</tr>
+</tbody></table>
+<p>Any visitor can browse listings. To <strong>book a showing</strong> or <strong>save a listing/search</strong>, they must create a free account. This is intentional  -  it captures lead info.</p>
+<h3 id="client-portal-what-registered-buyers-see-after-login">Client Portal (what registered buyers see after login)</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/portal</code></td>
+<td>Dashboard  -  saved listings, quick links</td>
+</tr>
+<tr>
+<td><code>/portal/messages</code></td>
+<td>Direct messaging thread with the agent</td>
+</tr>
+<tr>
+<td><code>/portal/appointments</code></td>
+<td>View, book, and manage showings</td>
+</tr>
+<tr>
+<td><code>/portal/saved</code></td>
+<td>Saved listings and saved searches</td>
+</tr>
+</tbody></table>
+<h3 id="agent-dashboard-private-----agent-only">Agent Dashboard (private  -  agent only)</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/dashboard</code></td>
+<td>Overview  -  key stats, recent leads, upcoming appointments</td>
+</tr>
+<tr>
+<td><code>/dashboard/leads</code></td>
+<td>All leads with status, notes, source tracking</td>
+</tr>
+<tr>
+<td><code>/dashboard/messages</code></td>
+<td>Reply to all client conversations</td>
+</tr>
+<tr>
+<td><code>/dashboard/appointments</code></td>
+<td>View, confirm, and cancel appointment requests</td>
+</tr>
+<tr>
+<td><code>/dashboard/listings</code></td>
+<td>Manage manually-added listings + view MLS feed</td>
+</tr>
+<tr>
+<td><code>/dashboard/blog</code></td>
+<td>Publish, draft, edit, and delete blog posts</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="how-the-key-features-work">How the Key Features Work</h2>
+<h3 id="property-listings">Property Listings</h3>
+<p>There are two types of listings:</p>
+<ol>
+<li><p><strong>MLS Feed</strong>  -  Properties synced automatically from the MLS provider (Bridge Interactive). A background job runs every 15 minutes to pull in new listings and update statuses. The agent doesn&#39;t touch these.</p>
+</li>
+<li><p><strong>Manual Listings</strong>  -  Properties the agent adds directly through the dashboard (pocket listings, off-market deals, etc.). Full control over all fields.</p>
+</li>
+</ol>
+<p>Both appear together on the public search page. MLS listings show a source badge; manual listings can be starred to show a &quot;Featured&quot; badge.</p>
+<h3 id="lead-capture">Lead Capture</h3>
+<p>A lead is created automatically whenever someone:</p>
+<ul>
+<li>Submits the contact form on the home page</li>
+<li>Starts a live chat</li>
+<li>Registers an account</li>
+<li>Books an appointment</li>
+</ul>
+<p>Every lead shows up in <code>/dashboard/leads</code> with their name, email, source, and a status the agent manually updates (Hot → Warm → Cold → Closed). The agent can add private notes per lead.</p>
+<h3 id="messaging">Messaging</h3>
+<p><strong>Live Chat (pre-account)</strong>  -  A floating chat bubble on every public page. Visitors can message the agent without creating an account. The agent sees these in real time. If the visitor then registers, the chat session converts into a full messaging thread tied to their account.</p>
+<p><strong>Messaging Threads (post-account)</strong>  -  Once a visitor creates an account, they get a full two-way messaging inbox. The agent sees all threads in <code>/dashboard/messages</code>, sorted by unread first. Messages support plain text, property card attachments (share a listing inline), and PDF attachments.</p>
+<p>Messages are delivered in real time using WebSockets (Socket.io). If the browser isn&#39;t open, push notifications are sent instead.</p>
+<h3 id="appointments">Appointments</h3>
+<p>The booking flow works like this:</p>
+<ol>
+<li>Client clicks &quot;Book a Showing&quot; on a listing page or in the portal</li>
+<li>They pick an appointment type (Showing, Buyer Consultation, Offer Review)</li>
+<li>They pick from available time slots</li>
+<li>They confirm  -  the agent gets notified</li>
+<li>Agent can <strong>Confirm</strong>, <strong>Cancel</strong>, or <strong>Counter-Propose</strong> a different time</li>
+<li>If counter-proposed, the client is notified and can accept or decline</li>
+<li>Once confirmed, both parties get a calendar invite via email</li>
+</ol>
+<p>The agent sets available time slots and appointment types from the backend configuration (not yet a dashboard UI  -  on the roadmap).</p>
+<h3 id="blog">Blog</h3>
+<p>The agent writes and publishes posts through <code>/dashboard/blog</code>. Posts are written in a rich text editor (bold, headings, images, links, etc.) with auto-save every 2 seconds. Posts stay as <strong>drafts</strong> until the agent explicitly publishes them. Published posts appear on the public <code>/blog</code> page and the home page preview.</p>
+<p>Each post has a title, excerpt, cover image, tags, and auto-calculated read time. The agent can unpublish a post to pull it back to draft at any time.</p>
+<h3 id="saved-searches">Saved Searches</h3>
+<p>When a logged-in buyer saves a search (e.g. &quot;3BR under $500k in Charleston&quot;), a background job checks new MLS listings against all saved searches every 15 minutes. If a match is found, the client gets a push notification and/or email with the new listing.</p>
+<h3 id="push-notifications">Push Notifications</h3>
+<p>Clients who allow browser notifications receive alerts for:</p>
+<ul>
+<li>New message from the agent</li>
+<li>Appointment confirmed/counter-proposed</li>
+<li>New listing matching a saved search</li>
+</ul>
+<p>The agent gets alerts for:</p>
+<ul>
+<li>New message from a client</li>
+<li>New appointment request</li>
+</ul>
+<hr>
+<h2 id="test-mode">Test Mode</h2>
+<p>The app has a built-in <strong>test mode</strong> that lets you demo the full UI without a live backend or Supabase account. All API calls are intercepted and return realistic mock data  -  12 SC/GA/FL listings, sample clients, messages, appointments, leads, and blog posts.</p>
+<p><strong>To enable test mode:</strong></p>
+<ul>
+<li>Set <code>NEXT_PUBLIC_TEST_MODE=true</code> in <code>frontend/.env.local</code> (already set for local dev)</li>
+<li>Or click the floating &quot;Test Mode&quot; button in the bottom-right corner of any page</li>
+</ul>
+<p><strong>To disable test mode:</strong></p>
+<ul>
+<li>Remove/set the env var to <code>false</code> and restart</li>
+<li>Or click &quot;Disable Test Mode&quot; in the yellow banner at the bottom of the screen</li>
+</ul>
+<p>When test mode is off, the app connects to the real Supabase auth and the real backend API.</p>
+<hr>
+<h2 id="the-tech-stack">The Tech Stack</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technology</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Frontend</td>
+<td>Next.js 14 (App Router)</td>
+<td>Server + client rendering, fast pages, SEO</td>
+</tr>
+<tr>
+<td>Styling</td>
+<td>Tailwind CSS</td>
+<td>Utility-first, easy to customize brand colors</td>
+</tr>
+<tr>
+<td>Auth</td>
+<td>Supabase Auth</td>
+<td>Email/password + magic link, JWT sessions</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>Supabase (Postgres)</td>
+<td>Managed, real-time capable, row-level security</td>
+</tr>
+<tr>
+<td>Backend API</td>
+<td>Node.js + Express</td>
+<td>REST API the frontend calls for all data</td>
+</tr>
+<tr>
+<td>Real-time</td>
+<td>Socket.io</td>
+<td>Live chat and messaging</td>
+</tr>
+<tr>
+<td>Background Jobs</td>
+<td>BullMQ + Redis</td>
+<td>MLS sync, notification matching, email sending</td>
+</tr>
+<tr>
+<td>Push Notifications</td>
+<td>Web Push (VAPID)</td>
+<td>Browser push without an app</td>
+</tr>
+<tr>
+<td>MLS Data</td>
+<td>Bridge Interactive</td>
+<td>Real listing data for SC (GA/FL when ready)</td>
+</tr>
+<tr>
+<td>Email</td>
+<td>SendGrid</td>
+<td>Calendar invites, notification emails</td>
+</tr>
+<tr>
+<td>Frontend Hosting</td>
+<td>Vercel</td>
+<td>Auto-deploys on git push</td>
+</tr>
+<tr>
+<td>Backend Hosting</td>
+<td>Railway</td>
+<td>Node API + worker processes</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="how-deployments-work">How Deployments Work</h2>
+<ol>
+<li>Push code to the <code>main</code> branch on GitHub</li>
+<li>GitHub Actions runs type checking and linting automatically</li>
+<li>If checks pass:<ul>
+<li>Vercel picks up the frontend and deploys it (usually under 2 minutes)</li>
+<li>Railway picks up the backend and redeploys the API and worker</li>
+</ul>
+</li>
+<li>No manual steps needed</li>
+</ol>
+<p>For the very first deployment, environment variables need to be set in the Vercel and Railway dashboards (Supabase keys, MLS credentials, etc.). See <code>frontend/.env.example</code> and <code>backend/.env.example</code> for the full list.</p>
+<hr>
+<h2 id="adding-ga-and-fl-listings">Adding GA and FL Listings</h2>
+<p>The system is built to support multiple states. Currently only SC is wired to the MLS feed. To add Georgia or Florida:</p>
+<ol>
+<li>Obtain Bridge Interactive credentials for the GA or FL market</li>
+<li>Add the env vars (<code>BRIDGE_GA_*</code> / <code>BRIDGE_FL_*</code>) to the backend</li>
+<li>Register a new provider in <code>backend/src/providers/ProviderRegistry.ts</code></li>
+<li>The sync jobs pick it up automatically on the next run</li>
+</ol>
+<p>No frontend changes needed  -  the search filters already include GA and FL.</p>
+<hr>
+<h2 id="accounts-and-roles">Accounts and Roles</h2>
+<p>There are two roles:</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>How you get it</th>
+<th>What it unlocks</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>client</code></td>
+<td>Register on the site</td>
+<td>Portal, messaging, appointments, saved searches</td>
+</tr>
+<tr>
+<td><code>agent</code></td>
+<td>Set manually in Supabase</td>
+<td>Full dashboard access</td>
+</tr>
+</tbody></table>
+<p>The agent account is set up once in the Supabase dashboard by changing <code>user_metadata.role</code> to <code>&quot;agent&quot;</code>. There is intentionally only one agent account  -  this is a solo-agent platform.</p>
+<hr>
+<h2 id="whats-not-built-yet">What&#39;s Not Built Yet</h2>
+<ul>
+<li>Agent availability/slot management UI (currently configured in the backend)</li>
+<li>GA and FL MLS connections (infrastructure ready, credentials needed)</li>
+<li>CRM integrations (Follow Up Boss, etc.)</li>
+<li>Mobile app</li>
+</ul>
+
+		</body>

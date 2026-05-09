@@ -1,0 +1,92 @@
+###############################################################
+# docker-compose.yml
+#
+# Local development stack.
+# Starts: Redis (BullMQ + cache), and both app services.
+#
+# Usage:
+#   docker compose up              — start everything
+#   docker compose up redis        — just Redis (if running Node locally)
+#   docker compose logs -f backend — tail backend logs
+###############################################################
+
+version: "3.9"
+
+services:
+
+  # ── Redis ────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+    healthcheck:
+      test:     ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout:  5s
+      retries:  5
+
+  # ── Backend API ───────────────────────────────────────────────────────────
+  backend:
+    build:
+      context:    ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "7381:7381"
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: development
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      # Mount source for hot-reload in dev (tsx watch picks up changes)
+      - ./backend/src:/app/src:ro
+    healthcheck:
+      test:     ["CMD", "curl", "-f", "http://localhost:7381/health"]
+      interval: 30s
+      timeout:  10s
+      retries:  3
+
+  # ── Background Workers (same image, different entrypoint) ─────────────────
+  workers:
+    build:
+      context:    ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["node", "dist/jobs/workerRunner.js"]
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: development
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src:ro
+
+  # ── Frontend ──────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context:    ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4712:4712"
+    env_file:
+      - ./frontend/.env.local
+    environment:
+      NODE_ENV:                      development
+      NEXT_PUBLIC_API_URL:           http://localhost:7381
+    depends_on:
+      - backend
+
+volumes:
+  redis_data:
