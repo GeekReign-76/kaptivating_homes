@@ -25,6 +25,7 @@ export function useSocket() {
 
     async function connect() {
       const supabase = createClient();
+      if (!supabase) return;
       const { data: { session } } = await supabase.auth.getSession();
       if (!session || !mounted) return;
 
