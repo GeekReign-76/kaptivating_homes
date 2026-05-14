@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { LoginForm }    from '@/components/auth/LoginForm';
+import { Suspense }      from 'react';
+import { LoginForm }     from '@/components/auth/LoginForm';
 
 export const metadata: Metadata = { title: 'Sign In' };
 
@@ -13,7 +14,9 @@ export default function LoginPage() {
           </h1>
           <p className="mt-2 text-neutral-500">Sign in to your account</p>
         </div>
-        <LoginForm />
+        <Suspense>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );

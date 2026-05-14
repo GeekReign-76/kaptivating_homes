@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { RegisterForm } from '@/components/auth/RegisterForm';
+import { Suspense }      from 'react';
+import { RegisterForm }  from '@/components/auth/RegisterForm';
 
 export const metadata: Metadata = { title: 'Create Account' };
 
@@ -15,7 +16,9 @@ export default function RegisterPage() {
             Save searches, message directly, and book appointments.
           </p>
         </div>
-        <RegisterForm />
+        <Suspense>
+          <RegisterForm />
+        </Suspense>
       </div>
     </div>
   );
