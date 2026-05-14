@@ -134,7 +134,7 @@ const COMMUNITIES: Community[] = [
     worship: [
       { name: 'Vietnamese Catholic Community', type: 'Catholic' },
       { name: 'Vietnamese Buddhist Association', type: 'Buddhist temple' },
-      { name: 'Vietnamese Alliance Church', area: 'East Charlotte' },
+      { name: 'Vietnamese Alliance Church', type: 'East Charlotte' },
     ],
     events: ['Vietnamese New Year (Tet) celebrations', 'Mid-Autumn Festival', 'Charlotte International Arts Festival'],
     mlsCity: 'Charlotte',

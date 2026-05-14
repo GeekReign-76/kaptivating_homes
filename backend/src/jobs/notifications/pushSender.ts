@@ -19,7 +19,8 @@ export function initWebPush(): void {
   const mailto     = process.env.VAPID_MAILTO;
 
   if (!publicKey || !privateKey || !mailto) {
-    throw new Error('Missing VAPID environment variables: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_MAILTO');
+    console.warn('[push] VAPID keys not configured — web push notifications disabled. Set VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_MAILTO to enable.');
+    return;
   }
 
   webpush.setVapidDetails(mailto, publicKey, privateKey);

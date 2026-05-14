@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 /**
  * server.ts
  *
@@ -13,8 +15,6 @@ import cors            from 'cors';
 import helmet          from 'helmet';
 import { Server as SocketIOServer } from 'socket.io';
 import { initWebPush }     from './jobs/notifications/pushSender';
-import { setupSyncScheduler, shutdownSyncWorkers } from './jobs/sync/scheduler';
-import { setupAppointmentReminderScheduler }        from './jobs/notifications/appointmentReminders';
 import morgan                      from 'morgan';
 import { registerSocketHandlers }  from './socket/socketServer';
 import { appointmentsRouter }      from './routes/appointments';
@@ -91,11 +91,21 @@ server.listen(PORT, async () => {
   // Initialize VAPID keys for web push
   initWebPush();
 
-  // Start recurring BullMQ schedulers
-  await setupSyncScheduler();
-  await setupAppointmentReminderScheduler();
-
-  console.log('[server] All workers and schedulers started.');
+  // Background job schedulers require Redis — load dynamically so a missing
+  // Redis instance doesn't crash the server on startup.
+  if (process.env.REDIS_URL) {
+    try {
+      const { setupSyncScheduler }                = await import('./jobs/sync/scheduler');
+      const { setupAppointmentReminderScheduler } = await import('./jobs/notifications/appointmentReminders');
+      await setupSyncScheduler();
+      await setupAppointmentReminderScheduler();
+      console.log('[server] All workers and schedulers started.');
+    } catch (err: any) {
+      console.warn('[server] Background schedulers failed to start:', err.message);
+    }
+  } else {
+    console.warn('[server] REDIS_URL not set — background jobs disabled. Core API fully functional.');
+  }
 });
 
 // -------------------------------------------------------------------------
@@ -105,7 +115,6 @@ server.listen(PORT, async () => {
 async function shutdown(signal: string): Promise<void> {
   console.log(`[server] ${signal} received — shutting down gracefully`);
   server.close(async () => {
-    await shutdownSyncWorkers();
     console.log('[server] Shutdown complete.');
     process.exit(0);
   });

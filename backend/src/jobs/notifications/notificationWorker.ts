@@ -18,33 +18,65 @@ import { sendPushToUser, buildPushPayload } from './pushSender';
  */
 
 // -------------------------------------------------------------------------
-// Queue & Worker setup
+// Queue & Worker setup — lazy, only when Redis is available
 // -------------------------------------------------------------------------
 
-const connection = new IORedis(process.env.REDIS_URL!, {
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-});
+let _connection:        InstanceType<typeof IORedis>  | null = null;
+let _notificationQueue: Queue                          | null = null;
+let _emailQueue:        Queue                          | null = null;
+export let notificationWorker: Worker | null = null;
 
-export const notificationQueue = new Queue('notifications', {
-  connection,
-  defaultJobOptions: {
-    attempts:         3,
-    backoff:          { type: 'exponential', delay: 5_000 },
-    removeOnComplete: { count: 500 },
-    removeOnFail:     { count: 200 },
-  },
-});
+function getRedisConnection(): InstanceType<typeof IORedis> | null {
+  if (!process.env.REDIS_URL) return null;
+  if (!_connection) {
+    _connection = new IORedis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: null,
+      enableReadyCheck:     false,
+    });
+  }
+  return _connection;
+}
 
-export const notificationWorker = new Worker(
-  'notifications',
-  processNotification,
-  { connection, concurrency: 10 },
-);
+export function getNotificationQueue(): Queue | null {
+  const conn = getRedisConnection();
+  if (!conn) return null;
+  if (!_notificationQueue) {
+    _notificationQueue = new Queue('notifications', {
+      connection: conn,
+      defaultJobOptions: {
+        attempts:         3,
+        backoff:          { type: 'exponential', delay: 5_000 },
+        removeOnComplete: { count: 500 },
+        removeOnFail:     { count: 200 },
+      },
+    });
+  }
+  return _notificationQueue;
+}
 
-notificationWorker.on('failed', (job, err) => {
-  console.error(`[notificationWorker] Job ${job?.id} failed:`, err.message);
-});
+export function getEmailQueue(): Queue | null {
+  const conn = getRedisConnection();
+  if (!conn) return null;
+  if (!_emailQueue) {
+    _emailQueue = new Queue('email', { connection: conn });
+  }
+  return _emailQueue;
+}
+
+export function initNotificationWorker(): void {
+  const conn = getRedisConnection();
+  if (!conn || notificationWorker) return;
+  notificationWorker = new Worker('notifications', processNotification, {
+    connection: conn,
+    concurrency: 10,
+  });
+  notificationWorker.on('failed', (job, err) => {
+    console.error(`[notificationWorker] Job ${job?.id} failed:`, err.message);
+  });
+}
+
+// Keep a named export for compatibility — resolves lazily
+export const notificationQueue = { add: (...args: Parameters<Queue['add']>) => getNotificationQueue()?.add(...args) };
 
 // -------------------------------------------------------------------------
 // Job data shape
@@ -146,11 +178,14 @@ export async function createNotification(
     return;
   }
 
-  await notificationQueue.add(
-    type,
-    { notification_id: notification.id },
-    { priority: priorityForType(type) },
-  );
+  const queue = getNotificationQueue();
+  if (queue) {
+    await queue.add(
+      type,
+      { notification_id: notification.id },
+      { priority: priorityForType(type) },
+    );
+  }
 }
 
 // -------------------------------------------------------------------------
@@ -194,9 +229,6 @@ function shouldEmailFallback(type: string): boolean {
   return EMAIL_FALLBACK_TYPES.has(type);
 }
 
-// Email queue (SendGrid) — separate worker handles actual sending
-const emailQueue = new Queue('email', { connection });
-
 async function queueEmailFallback(notification: Record<string, any>): Promise<void> {
   // Fetch user email
   const { data: user } = await db
@@ -206,6 +238,9 @@ async function queueEmailFallback(notification: Record<string, any>): Promise<vo
     .single();
 
   if (!user?.email) return;
+
+  const emailQueue = getEmailQueue();
+  if (!emailQueue) return;
 
   await emailQueue.add('send-email', {
     to:           user.email,

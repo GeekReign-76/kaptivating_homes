@@ -496,7 +496,8 @@ async function sendCalendarInvites(appt: any): Promise<void> {
 
     // Queue email with .ics attachment to both parties
     // (handled by the email worker — not shown here)
-    const { emailQueue } = await import('../jobs/notifications/notificationWorker');
+    const { getEmailQueue } = await import('../jobs/notifications/notificationWorker');
+    const emailQueue = getEmailQueue();
     const clientName = appt.client?.full_name ?? 'Client';
     const clientEmail = appt.client?.email;
     const typeName  = appt.appointment_types?.name ?? 'Appointment';
