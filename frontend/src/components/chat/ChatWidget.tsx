@@ -24,6 +24,7 @@ export function ChatWidget() {
   const [initMsg, setInitMsg] = useState('');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sending, setSending]    = useState(false);
+  const [error,   setError]      = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,6 +44,7 @@ export function ChatWidget() {
   async function startChat() {
     if (!initMsg.trim()) return;
     setSending(true);
+    setError('');
     try {
       const res: any = await api.chat.createSession({
         guest_name:      name || undefined,
@@ -55,7 +57,6 @@ export function ChatWidget() {
       if (res.agentOnline || isTestMode()) {
         setStage('active');
         setMsgs(newMsgs);
-        // Simulate agent reply in test mode
         if (isTestMode()) {
           setTimeout(() => {
             setMsgs(prev => [...prev, {
@@ -65,12 +66,15 @@ export function ChatWidget() {
           }, 1800);
         }
       } else {
+        // Agent offline — message is saved, show confirmation
         setStage('offline');
         setMsgs([
           ...newMsgs,
-          { role: 'system', content: "I'm not available right now but I'll get back to you within a few hours. Leave your name and email and I'll reach out soon!" },
+          { role: 'system', content: "Your message has been sent! I'm not available right now but I'll get back to you within a few hours." },
         ]);
       }
+    } catch {
+      setError('Unable to send — please try again or email us directly.');
     } finally {
       setSending(false);
     }
@@ -148,8 +152,9 @@ export function ChatWidget() {
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); startChat(); } }}
                 />
+                {error && <p className="text-xs text-red-500">{error}</p>}
                 <Button className="w-full" onClick={startChat} disabled={!initMsg.trim() || sending}>
-                  {sending ? 'Starting chat…' : 'Start Chat'}
+                  {sending ? 'Sending…' : 'Send Message'}
                 </Button>
               </div>
             )}
