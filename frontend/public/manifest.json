@@ -2,7 +2,7 @@
   "name": "Kaptivating Homes",
   "short_name": "K-Homes",
   "description": "Find your dream home",
-  "start_url": "/",
+  "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#fafaf9",
   "theme_color": "#1a6ef5",

@@ -2,7 +2,7 @@
 
 import Link            from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { MessageSquare, Calendar, Heart, Bell, LogOut, Home } from 'lucide-react';
+import { MessageSquare, Calendar, Heart, LogOut, Home, LayoutDashboard } from 'lucide-react';
 import { cn }          from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth }     from '@/hooks/useAuth';
@@ -62,6 +62,11 @@ export function PortalNav() {
               <p className="text-xs text-neutral-400 truncate">{user?.email}</p>
             </div>
           </div>
+          {user?.role === 'agent' && (
+            <Link href="/dashboard" className="flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700 w-full px-1 font-medium">
+              <LayoutDashboard className="w-4 h-4" /> Agent Dashboard
+            </Link>
+          )}
           <button
             onClick={signOut}
             className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 w-full px-1"
@@ -90,6 +95,12 @@ export function PortalNav() {
             <span>{label}</span>
           </Link>
         ))}
+        {user?.role === 'agent' && (
+          <Link href="/dashboard" className="flex-1 flex flex-col items-center py-2 text-xs gap-1 text-brand-600">
+            <LayoutDashboard className="w-5 h-5" />
+            <span>Dashboard</span>
+          </Link>
+        )}
       </nav>
     </>
   );
