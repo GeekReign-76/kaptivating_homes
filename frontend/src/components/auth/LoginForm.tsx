@@ -27,6 +27,7 @@ export function LoginForm() {
     if (!supabase) { setError('Auth not configured.'); setBusy(false); return; }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) { setError(error.message); setBusy(false); return; }
+    router.refresh();
     router.push(next);
   }
 
