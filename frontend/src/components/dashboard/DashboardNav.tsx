@@ -8,15 +8,18 @@ import { useAuth } from '@/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
 
 const NAV = [
-  { href: '/dashboard',              icon: LayoutDashboard, label: 'Overview'     },
-  { href: '/dashboard/leads',        icon: Users,           label: 'Leads'        },
-  { href: '/dashboard/messages',     icon: MessageSquare,   label: 'Messages'     },
-  { href: '/dashboard/appointments', icon: Calendar,        label: 'Appointments' },
-  { href: '/dashboard/schedule',     icon: Clock,           label: 'Schedule'     },
-  { href: '/dashboard/listings',     icon: Home,            label: 'Listings'     },
-  { href: '/dashboard/blog',         icon: FileText,        label: 'Blog'         },
-  { href: '/dashboard/monitor',      icon: Activity,        label: 'Monitor'      },
+  { href: '/dashboard',              icon: LayoutDashboard, label: 'Overview',     adminOnly: false },
+  { href: '/dashboard/leads',        icon: Users,           label: 'Leads',        adminOnly: false },
+  { href: '/dashboard/messages',     icon: MessageSquare,   label: 'Messages',     adminOnly: false },
+  { href: '/dashboard/appointments', icon: Calendar,        label: 'Appointments', adminOnly: false },
+  { href: '/dashboard/schedule',     icon: Clock,           label: 'Schedule',     adminOnly: false },
+  { href: '/dashboard/listings',     icon: Home,            label: 'Listings',     adminOnly: false },
+  { href: '/dashboard/blog',         icon: FileText,        label: 'Blog',         adminOnly: false },
+  { href: '/dashboard/monitor',      icon: Activity,        label: 'Monitor',      adminOnly: true  },
 ];
+
+const MONITOR_EMAILS = (process.env.NEXT_PUBLIC_MONITOR_ADMIN_EMAIL ?? '')
+  .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
 
 export function DashboardNav() {
   const pathname = usePathname();
@@ -43,7 +46,7 @@ export function DashboardNav() {
       </div>
 
       <nav className="flex-1 p-3 space-y-1">
-        {NAV.map(({ href, icon: Icon, label }) => (
+        {NAV.filter(({ adminOnly }) => !adminOnly || MONITOR_EMAILS.includes(user?.email?.toLowerCase() ?? '')).map(({ href, icon: Icon, label }) => (
           <Link
             key={href}
             href={href}
