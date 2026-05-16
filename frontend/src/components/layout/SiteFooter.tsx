@@ -7,7 +7,7 @@ export function SiteFooter() {
   const agentTitle   = process.env.NEXT_PUBLIC_AGENT_TITLE     ?? 'REALTOR®';
   const agentPhone   = process.env.NEXT_PUBLIC_AGENT_PHONE     ?? '(336) 804-9760';
   const phoneOffice  = process.env.NEXT_PUBLIC_AGENT_PHONE_OFFICE ?? '(704) 887-6600';
-  const agentEmail   = process.env.NEXT_PUBLIC_AGENT_EMAIL     ?? 'karstenm@kw.com';
+  const agentEmail   = process.env.NEXT_PUBLIC_AGENT_EMAIL     ?? 'Karsten.dmiller@gmail.com';
   const agentLicense = process.env.NEXT_PUBLIC_AGENT_LICENSE   ?? 'NC #279290';
   const brokerage    = process.env.NEXT_PUBLIC_AGENT_BROKERAGE ?? 'Keller Williams Realty Ballantyne';
   const address      = process.env.NEXT_PUBLIC_AGENT_ADDRESS   ?? '14045 Ballantyne Corporate Place, Suite 500, Charlotte, NC';
@@ -52,6 +52,7 @@ export function SiteFooter() {
             <ul className="space-y-2 text-sm">
               {[
                 ['Home',                  '/'],
+                ['Listings',              '/properties'],
                 ['Search Listings',       '/listings'],
                 ['Relocate to Charlotte', '/relocate'],
                 ['Blog',                  '/blog'],

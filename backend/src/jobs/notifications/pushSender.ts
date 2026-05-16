@@ -197,6 +197,43 @@ function buildDeepLink(type: string, data: Record<string, string>): string {
   }
 }
 
+// -------------------------------------------------------------------------
+// sendPushToAllAgents — used by health monitor alerts
+//
+// Sends to every push subscription in the table.
+// In this app only agents subscribe via the dashboard, so this effectively
+// reaches all admin devices without needing a role join.
+// -------------------------------------------------------------------------
+
+export async function sendPushToAllAgents(opts: {
+  title: string;
+  body:  string;
+  url:   string;
+}): Promise<void> {
+  const { data: subscriptions } = await db
+    .from('push_subscriptions')
+    .select('id, endpoint, p256dh_key, auth_key');
+
+  if (!subscriptions || subscriptions.length === 0) return;
+
+  const payloadString = JSON.stringify({
+    title: opts.title,
+    body:  truncate(opts.body, 120),
+    icon:  '/icons/icon-192.png',
+    badge: '/icons/badge-72.png',
+    tag:   'server-alert',
+    data: {
+      url:             opts.url,
+      notification_id: 'system',
+      type:            'server_alert',
+    },
+  });
+
+  await Promise.allSettled(
+    subscriptions.map(sub => sendToSubscription(sub, payloadString))
+  );
+}
+
 function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength - 1) + '…';

@@ -12,9 +12,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { createClient } from '@/lib/supabase/client';
 
 const NAV_LINKS = [
-  { label: 'Listings',           href: '/listings' },
-  { label: 'Relocating to CLT', href: '/relocate' },
-  { label: 'Blog',               href: '/blog'     },
+  { label: 'Listings',           href: '/properties' },
+  { label: 'Search',             href: '/listings'   },
+  { label: 'Relocating to CLT', href: '/relocate'   },
+  { label: 'Blog',               href: '/blog'       },
 ];
 
 const SITE_NAME    = process.env.NEXT_PUBLIC_SITE_NAME            ?? 'KaptivatingHomes';

@@ -13,13 +13,11 @@ import { db } from '../lib/db';
 import { registerThreadSocketHandlers } from './threadSocket';
 import { registerChatSocketHandlers }   from './chatSocket';
 
-// Extend Socket type to carry authenticated user data
+// Extend SocketData to carry authenticated user data
 declare module 'socket.io' {
-  interface Socket {
-    data: {
-      userId: string;
-      role:   'agent' | 'client';
-    };
+  interface SocketData {
+    userId: string;
+    role:   'agent' | 'client';
   }
 }
 

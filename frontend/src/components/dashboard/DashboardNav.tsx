@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Users, MessageSquare, Home, FileText, Calendar, Clock, LogOut, ExternalLink } from 'lucide-react';
+import { LayoutDashboard, Users, MessageSquare, Home, FileText, Calendar, Clock, LogOut, ExternalLink, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
@@ -15,6 +15,7 @@ const NAV = [
   { href: '/dashboard/schedule',     icon: Clock,           label: 'Schedule'     },
   { href: '/dashboard/listings',     icon: Home,            label: 'Listings'     },
   { href: '/dashboard/blog',         icon: FileText,        label: 'Blog'         },
+  { href: '/dashboard/monitor',      icon: Activity,        label: 'Monitor'      },
 ];
 
 export function DashboardNav() {

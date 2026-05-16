@@ -205,14 +205,16 @@ appointmentsRouter.post('/public-book', async (req: Request, res: Response) => {
       const displayName  = name ? `${name} (${email})` : email;
       const typeLabel    = appointment_type.replace(/_/g, ' ');
       const dateLabel    = preferred_date ? ` for ${preferred_date}` : '';
-      await db.from('notifications').insert({
-        user_id:  agentUserId,
-        type:     'new_appointment',
-        title:    'New Appointment Request',
-        body:     `${displayName} requested a ${typeLabel}${dateLabel}.${property_url ? ' Has a property in mind.' : ''}`,
-        metadata: { appointment_id: appointment.id, user_id: userId, source: 'public_booking' },
-        channel:  'push',
-      }).catch(() => {});
+      try {
+        await db.from('notifications').insert({
+          user_id:  agentUserId,
+          type:     'new_appointment',
+          title:    'New Appointment Request',
+          body:     `${displayName} requested a ${typeLabel}${dateLabel}.${property_url ? ' Has a property in mind.' : ''}`,
+          metadata: { appointment_id: appointment.id, user_id: userId, source: 'public_booking' },
+          channel:  'push',
+        });
+      } catch { /* non-critical — appointment already saved */ }
     }
 
     return res.status(201).json({ data: { booked: true, appointment_id: appointment.id }, error: null });
@@ -543,11 +545,3 @@ function handleError(res: Response, err: any): Response {
   return res.status(status).json({ data: null, error: { code, message: err.message } });
 }
 
-// TypeScript augmentation for req.user (set by auth middleware)
-declare global {
-  namespace Express {
-    interface Request {
-      user?: { id: string; role: string };
-    }
-  }
-}

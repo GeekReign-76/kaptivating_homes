@@ -7,7 +7,7 @@
  * Easy to unit test: provide mock windows/blocks/appointments, assert slots.
  */
 
-import { zonedTimeToUtc, utcToZonedTime, format } from 'date-fns-tz';
+import { fromZonedTime, toZonedTime, format } from 'date-fns-tz';
 import { addMinutes, isWithinInterval, areIntervalsOverlapping } from 'date-fns';
 
 // -------------------------------------------------------------------------
@@ -67,7 +67,7 @@ export function calculateAvailableSlots(params: SlotCalculationParams): TimeSlot
   } = params;
 
   // Determine day of week in the agent's timezone for the given date
-  const localDateStr = format(utcToZonedTime(date, agentTimezone), 'yyyy-MM-dd', { timeZone: agentTimezone });
+  const localDateStr = format(toZonedTime(date, agentTimezone), 'yyyy-MM-dd', { timeZone: agentTimezone });
   const localDate    = new Date(`${localDateStr}T00:00:00`);
   const dayOfWeek    = localDate.getDay(); // 0=Sun ... 6=Sat
 
@@ -163,7 +163,7 @@ export function calculateSlotsForDateRange(
 
   while (cursor <= end) {
     const dateStr = format(
-      utcToZonedTime(cursor, agentTimezone),
+      toZonedTime(cursor, agentTimezone),
       'yyyy-MM-dd',
       { timeZone: agentTimezone }
     );
@@ -172,7 +172,7 @@ export function calculateSlotsForDateRange(
     const blocksForDate = availabilityBlocks.filter((b) => b.blocked_date === dateStr);
     const appointmentsForDate = existingAppointments.filter((a) => {
       const apptDate = format(
-        utcToZonedTime(new Date(a.confirmed_start), agentTimezone),
+        toZonedTime(new Date(a.confirmed_start), agentTimezone),
         'yyyy-MM-dd',
         { timeZone: agentTimezone }
       );
@@ -210,7 +210,7 @@ export function calculateSlotsForDateRange(
 function localTimeToUtc(dateStr: string, timeStr: string, timezone: string): Date {
   const [hours, minutes] = timeStr.split(':').map(Number);
   const localDatetime = new Date(`${dateStr}T${pad(hours)}:${pad(minutes)}:00`);
-  return zonedTimeToUtc(localDatetime, timezone);
+  return fromZonedTime(localDatetime, timezone);
 }
 
 /**

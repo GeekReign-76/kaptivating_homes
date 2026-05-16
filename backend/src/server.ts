@@ -26,6 +26,8 @@ import { documentsRouter }         from './routes/documents';
 import { leadsRouter }             from './routes/leads';
 import { blogRouter }              from './routes/blog';
 import { notificationsRouter }     from './routes/notifications';
+import { adminRouter }             from './routes/admin';
+import { startHealthMonitor }      from './jobs/monitor/healthMonitor';
 
 // -------------------------------------------------------------------------
 // Express app
@@ -55,6 +57,7 @@ app.use('/api/v1/appointments',    appointmentsRouter);
 app.use('/api/v1/threads',         threadsRouter);
 app.use('/api/v1/chat',            chatRouter);
 app.use('/api/v1',                 notificationsRouter); // /push/subscribe + /notifications
+app.use('/api/v1/admin',           adminRouter);         // health + push test (agent only)
 
 // Health check (used by Railway/Render deploy checks)
 app.get('/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
@@ -90,6 +93,9 @@ server.listen(PORT, async () => {
 
   // Initialize VAPID keys for web push
   initWebPush();
+
+  // Start in-process health monitor (memory + DB checks every 5 min)
+  startHealthMonitor();
 
   // Background job schedulers require Redis — load dynamically so a missing
   // Redis instance doesn't crash the server on startup.

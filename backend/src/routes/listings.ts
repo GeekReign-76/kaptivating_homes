@@ -33,6 +33,7 @@ listingsRouter.get('/', async (req: Request, res: Response) => {
     states,
     property_type,
     status      = 'Active',
+    source,
     min_price,
     max_price,
     min_beds,

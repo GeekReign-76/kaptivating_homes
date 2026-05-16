@@ -39,6 +39,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'files.keepingcurrentmatters.com',
       },
+      {
+        // KW listing photos served via Cloudflare SmartAgent CDN
+        protocol: 'https',
+        hostname: 'cflare.smarteragent.com',
+      },
     ],
   },
 

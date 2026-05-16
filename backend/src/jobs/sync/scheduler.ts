@@ -1,4 +1,4 @@
-import { Queue, Worker, QueueScheduler, RepeatableJob } from 'bullmq';
+import { Queue, Worker, RepeatableJob } from 'bullmq';
 import IORedis from 'ioredis';
 import { db } from '../../lib/db';
 import { fullSyncHandler } from './fullSync';
@@ -23,7 +23,6 @@ export const fullSyncQueue = new Queue('mls-sync-full', {
   defaultJobOptions: {
     attempts:  3,
     backoff:   { type: 'exponential', delay: 60_000 },
-    timeout:   30 * 60 * 1000, // 30 minutes
     removeOnComplete: { count: 50 },
     removeOnFail:     { count: 100 },
   },
@@ -34,7 +33,6 @@ export const incrementalSyncQueue = new Queue('mls-sync-incremental', {
   defaultJobOptions: {
     attempts:  3,
     backoff:   { type: 'exponential', delay: 30_000 },
-    timeout:   10 * 60 * 1000, // 10 minutes
     removeOnComplete: { count: 100 },
     removeOnFail:     { count: 100 },
   },
@@ -45,7 +43,6 @@ export const staleCheckQueue = new Queue('mls-stale-check', {
   defaultJobOptions: {
     attempts:  2,
     backoff:   { type: 'fixed', delay: 60_000 },
-    timeout:   30_000, // 30 seconds per listing
     removeOnComplete: true,
     removeOnFail:     { count: 50 },
   },
@@ -56,7 +53,6 @@ export const listingStatusChangedQueue = new Queue('mls-listing-status-changed',
   defaultJobOptions: {
     attempts:  3,
     backoff:   { type: 'exponential', delay: 5_000 },
-    timeout:   30_000,
     removeOnComplete: { count: 200 },
     removeOnFail:     { count: 100 },
   },
@@ -150,7 +146,7 @@ export async function setupSyncScheduler(): Promise<void> {
       `full-${market.id}`,
       { market_id: market.id },
       {
-        repeat: { cron: '0 2 * * 0' }, // Sunday 2am UTC
+        repeat: { pattern: '0 2 * * 0' }, // Sunday 2am UTC
         jobId:  `full-${market.id}`,
       }
     );
@@ -217,7 +213,7 @@ export async function onMarketActivated(marketId: string): Promise<void> {
   await fullSyncQueue.add(
     `full-${marketId}`,
     { market_id: marketId },
-    { repeat: { cron: '0 2 * * 0' }, jobId: `full-${marketId}` }
+    { repeat: { pattern: '0 2 * * 0' }, jobId: `full-${marketId}` }
   );
 
   // Trigger an immediate full sync to populate the new market

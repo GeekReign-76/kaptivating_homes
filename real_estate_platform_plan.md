@@ -103,12 +103,12 @@ Even though we launch with SC only, the data layer and API design treat **state*
 ### Infrastructure
 | Tool | Purpose |
 |---|---|
-| Vercel | Next.js frontend hosting |
-| Railway or Render | Node.js API + Socket.io server |
+| GoDaddy VPS (`208.109.33.217`) | Hosts both Next.js frontend (port 4712) and Node.js API (port 7381) |
+| PM2 | Process manager — keeps both processes running, auto-restarts on crash |
 | Supabase | PostgreSQL + Auth + File Storage |
-| Upstash | Serverless Redis |
-| AWS S3 or Supabase Storage | PDFs, documents, uploaded photos |
-| Firebase | Push notification delivery |
+| Redis (optional) | BullMQ job queue — background jobs disabled if `REDIS_URL` not set; core API fully functional without it |
+| Supabase Storage | PDFs, documents, uploaded photos |
+| Web Push (VAPID) | Push notification delivery — no Firebase SDK required |
 | Twilio SendGrid | Email (confirmations, fallback notifications) |
 
 ### MLS / IDX
@@ -219,19 +219,27 @@ Every listing display must include:
 
 ### Pages
 
-| Route | Description |
-|---|---|
-| `/` | Homepage — hero, featured listings, agent bio, market areas |
-| `/search` | Full property search with filters and map |
-| `/listings/[id]` | Property detail page |
-| `/buy` | Buyer resources landing page |
-| `/sell` | Seller resources landing page |
-| `/about` | Agent bio, credentials, testimonials |
-| `/blog` | Market updates and articles |
-| `/blog/[slug]` | Individual blog post |
-| `/contact` | Contact form + booking CTA |
-| `/book` | Calendar booking page |
-| `/portal` | Registered client login / dashboard |
+| Route | Description | Status |
+|---|---|---|
+| `/` | Homepage — hero, KW featured listings, agent bio, contact | ✅ Live |
+| `/properties` | Paginated KW Ballantyne office listings with lead capture | ✅ Built |
+| `/listings` | KW search iframe (full office search) | ✅ Live |
+| `/listings/[id]` | Property detail page | ✅ Live |
+| `/relocate` | International community guide + luxury lifestyle explorer | ✅ Live |
+| `/blog` | Market updates and articles | ✅ Live |
+| `/blog/[slug]` | Individual blog post | ✅ Live |
+| `/portal` | Registered client dashboard | ✅ Live |
+| `/portal/messages` | Client messaging | ✅ Live |
+| `/portal/appointments` | Client appointments | ✅ Live |
+| `/portal/saved` | Saved properties | ✅ Live |
+
+#### KW Listings Integration
+Karsten's Keller Williams listings are served from a static JSON cache at `frontend/src/app/api/kw-listings/kw-listings-cache.json`. The cache was parsed from the KW agent page HTML (direct server fetch returns 403). When listings change, update the cache file and redeploy. Listings link directly to `karstenmiller.kw.com/property/[slug]/[id]` — the `PropertyInterestPrompt` arms on click and fires lead capture when the user returns to the site.
+
+#### Relocate Page
+Two sections:
+1. **Luxury & Lifestyle** — 6 cards (Lake Norman, Lake Wylie, Myers Park, Golf, Equestrian, Uptown Luxury) linking to KW search with lead capture on return
+2. **International Communities** — 9 expandable community cards (Indian, Hispanic, Vietnamese, Korean, African, Filipino, Middle Eastern, Chinese, European) with restaurants, markets, worship, events, and Browse Listings CTA
 
 ### Property Search
 
@@ -317,6 +325,14 @@ Every listing display must include:
 - Lead source breakdown
 - Upcoming appointments count
 - Message response time average
+
+#### Server Monitor (`/dashboard/monitor`)
+- Agent-only, additionally gated to `MONITOR_ADMIN_EMAIL` env var (Karsten's Gmail)
+- Polls `/api/v1/admin/health` every 30 seconds
+- Displays: server status, uptime, heap memory bar, database latency, Redis config, process info
+- Push notification management: enable/disable per device, send test notification
+- Backend health monitor job runs every 5 minutes — sends push alerts for: heap >80%, heap >90%, DB unreachable, DB slow (>3s); 30-minute cooldown per alert type
+- For complete crash detection (PM2 dead) use external monitor pointing at `/health` endpoint
 
 ---
 

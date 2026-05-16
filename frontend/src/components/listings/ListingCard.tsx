@@ -11,6 +11,8 @@ interface ListingCardProps {
   listing:       any;
   saved?:        boolean;
   onSaveToggle?: (id: string) => void;
+  href?:         string;    // override the default /listings/:id link
+  onClick?:      () => void; // called before navigation (e.g. to arm a prompt)
 }
 
 const STATUS_BADGE: Record<string, { label: string; variant: 'success' | 'warning' | 'secondary' | 'destructive' }> = {
@@ -20,7 +22,7 @@ const STATUS_BADGE: Record<string, { label: string; variant: 'success' | 'warnin
   Closed:  { label: 'Closed',       variant: 'secondary'   },
 };
 
-export function ListingCard({ listing, saved = false, onSaveToggle }: ListingCardProps) {
+export function ListingCard({ listing, saved = false, onSaveToggle, href, onClick }: ListingCardProps) {
   const [photoIdx, setPhotoIdx] = useState(0);
   const [isSaved,  setIsSaved]  = useState(saved);
   const photos = listing.photos ?? [];
@@ -36,7 +38,10 @@ export function ListingCard({ listing, saved = false, onSaveToggle }: ListingCar
 
   return (
     <Link
-      href={`/listings/${listing.id}`}
+      href={href ?? `/listings/${listing.id}`}
+      target={href ? '_blank' : undefined}
+      rel={href ? 'noopener noreferrer' : undefined}
+      onClick={onClick}
       className="group block bg-white rounded-xl overflow-hidden border border-neutral-200 shadow-sm hover:shadow-md transition-shadow"
     >
       {/* Photo */}

@@ -160,7 +160,7 @@ const STATUS_MAP: Record<string, MlsStatus> = {
   'delete':                'Withdrawn',
 };
 
-function normalizeMlsStatus(value?: string): MlsStatus {
+export function normalizeMlsStatus(value?: string): MlsStatus {
   if (!value) return 'Active';
   return STATUS_MAP[value.toLowerCase().trim()] ?? 'Active';
 }

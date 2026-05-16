@@ -49,8 +49,8 @@ export function ContactSection() {
 
             <div className="space-y-5">
               {[
-                { icon: Phone, label: process.env.NEXT_PUBLIC_AGENT_PHONE ?? '(555) 000-0000', href: `tel:${process.env.NEXT_PUBLIC_AGENT_PHONE}` },
-                { icon: Mail,  label: process.env.NEXT_PUBLIC_AGENT_EMAIL ?? 'hello@yourdomain.com', href: `mailto:${process.env.NEXT_PUBLIC_AGENT_EMAIL}` },
+                { icon: Phone, label: process.env.NEXT_PUBLIC_AGENT_PHONE ?? '(336) 804-9760', href: `tel:${process.env.NEXT_PUBLIC_AGENT_PHONE ?? '(336) 804-9760'}` },
+                { icon: Mail,  label: process.env.NEXT_PUBLIC_AGENT_EMAIL ?? 'Karsten.dmiller@gmail.com', href: `mailto:${process.env.NEXT_PUBLIC_AGENT_EMAIL ?? 'Karsten.dmiller@gmail.com'}` },
                 { icon: Clock, label: 'Mon–Sat, 8am–7pm ET', href: undefined },
               ].map(({ icon: Icon, label, href }) => (
                 <div key={label} className="flex items-center gap-3 text-neutral-300">

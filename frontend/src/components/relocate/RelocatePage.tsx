@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MapPin, Utensils, ShoppingBag, Heart, CalendarDays, ArrowRight, Plane, Building2, Globe2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PropertyInterestPrompt } from '@/components/listings/PropertyInterestPrompt';
+import { LuxuryLifestyleSection } from '@/components/relocate/LuxuryLifestyleSection';
 
 // ---------------------------------------------------------------------------
 // Data
@@ -25,6 +26,8 @@ type Community = {
   color: string;
   bg: string;
   border: string;
+  gradient: string;
+  accent: string;
   population: string;
   neighborhoods: string[];
   description: string;
@@ -34,7 +37,6 @@ type Community = {
   events: string[];
   mlsCity: string;
   mlsZip: string;
-  // KW search viewport: northLat,eastLng,southLat,westLng
   kwViewport: string;
 };
 
@@ -47,6 +49,8 @@ const COMMUNITIES: Community[] = [
     color: 'text-orange-700',
     bg: 'bg-orange-50',
     border: 'border-orange-200',
+    gradient: 'from-orange-950 to-amber-900',
+    accent: 'bg-orange-500',
     population: '35,000+ residents',
     neighborhoods: ['Ballantyne', 'Pineville', 'South Charlotte', 'University City'],
     description: 'Charlotte\'s Indian community has seen explosive growth over the past two decades, driven by the city\'s booming tech and finance sectors. Ballantyne in particular has become a thriving hub with a distinctly South Indian character — you\'ll find the faint scent of jasmine garlands and the sound of Carnatic music drifting from homes on weekend mornings.',
@@ -81,6 +85,8 @@ const COMMUNITIES: Community[] = [
     color: 'text-red-700',
     bg: 'bg-red-50',
     border: 'border-red-200',
+    gradient: 'from-red-950 to-rose-900',
+    accent: 'bg-red-500',
     population: '158,000+ residents (15%+ of the city)',
     neighborhoods: ['East Charlotte', 'Plaza Midwood', 'Central Avenue Corridor', 'North Charlotte'],
     description: 'Charlotte\'s Hispanic community is the largest and most established international community in the city. The Central Avenue corridor is vibrant with Mexican panaderias, Guatemalan comedores, Salvadoran pupuserias, and Colombian bakeries. Spanish is heard as naturally here as English — this is a community that has built something lasting.',
@@ -114,6 +120,8 @@ const COMMUNITIES: Community[] = [
     color: 'text-yellow-700',
     bg: 'bg-yellow-50',
     border: 'border-yellow-200',
+    gradient: 'from-yellow-950 to-amber-900',
+    accent: 'bg-yellow-500',
     population: 'Well-established community since the 1990s',
     neighborhoods: ['East Charlotte', 'Central Avenue', 'Madison Park', 'South Boulevard', 'Ballantyne'],
     description: 'The Vietnamese community arrived in Charlotte in significant numbers in the 1990s, many as refugees who built businesses and institutions from the ground up. Central Avenue is home to authentic pho shops, banh mi bakeries, and Asian markets that serve as gathering places for the broader community. The neighborhood has a quiet, industrious pride.',
@@ -149,6 +157,8 @@ const COMMUNITIES: Community[] = [
     color: 'text-blue-700',
     bg: 'bg-blue-50',
     border: 'border-blue-200',
+    gradient: 'from-blue-950 to-indigo-900',
+    accent: 'bg-blue-500',
     population: 'Rapidly growing community',
     neighborhoods: ['Ballantyne', 'Matthews', 'South Charlotte', 'Pineville'],
     description: 'Charlotte\'s Korean community has expanded rapidly alongside the city\'s tech and professional services growth. Korean BBQ restaurants have become gathering spots not just for Korean families but for the whole city. The Matthews corridor has a strong concentration of Korean-owned businesses, and Korean churches play a major role in community life.',
@@ -183,6 +193,8 @@ const COMMUNITIES: Community[] = [
     color: 'text-green-700',
     bg: 'bg-green-50',
     border: 'border-green-200',
+    gradient: 'from-green-950 to-emerald-900',
+    accent: 'bg-green-500',
     population: 'Growing communities from 30+ African nations',
     neighborhoods: ['East Charlotte', 'University Area', 'North Charlotte', 'West Charlotte'],
     description: 'Charlotte has welcomed communities from across Africa and the Caribbean — Nigerian professionals, Liberian families, Ethiopian and Somali refugees, Ghanaian business owners, and communities from the islands. Each brings distinct food traditions, music, languages, and faith practices. The East Charlotte corridor has become a place where many of these communities overlap and intermingle.',
@@ -216,6 +228,8 @@ const COMMUNITIES: Community[] = [
     color: 'text-indigo-700',
     bg: 'bg-indigo-50',
     border: 'border-indigo-200',
+    gradient: 'from-indigo-950 to-violet-900',
+    accent: 'bg-indigo-500',
     population: 'Third-largest Asian community in the US nationally',
     neighborhoods: ['Pineville', 'University City', 'Ballantyne', 'Lake Norman area'],
     description: 'Charlotte\'s Filipino community is warm, family-oriented, and deeply connected. Filipinos are prominent in the healthcare sector — many nurses and medical professionals make Charlotte home — as well as in engineering and finance. Community gatherings often center around food, and the bayanihan spirit of communal support is alive and well here.',
@@ -248,6 +262,8 @@ const COMMUNITIES: Community[] = [
     color: 'text-teal-700',
     bg: 'bg-teal-50',
     border: 'border-teal-200',
+    gradient: 'from-teal-950 to-cyan-900',
+    accent: 'bg-teal-500',
     population: 'Growing communities from across the Arab world and beyond',
     neighborhoods: ['South Charlotte', 'East Charlotte', 'University Area', 'Ballantyne'],
     description: 'Charlotte\'s Muslim and Middle Eastern communities represent Lebanese, Egyptian, Palestinian, Pakistani, Turkish, and many other nationalities. Halal restaurants and groceries are found across the city. The community has invested significantly in religious infrastructure — a new $9 million mosque expansion is currently underway — and Islamic schools serve families throughout the region.',
@@ -281,6 +297,8 @@ const COMMUNITIES: Community[] = [
     color: 'text-rose-700',
     bg: 'bg-rose-50',
     border: 'border-rose-200',
+    gradient: 'from-rose-950 to-pink-900',
+    accent: 'bg-rose-500',
     population: 'Established since the 1980s, growing steadily',
     neighborhoods: ['South Charlotte', 'Ballantyne', 'University City', 'Matthews'],
     description: 'The Chinese American Association of Charlotte (CAAOC) has been serving the community since 1984, making this one of the oldest organized international communities in the city. Charlotte\'s East Asian community spans Chinese, Taiwanese, Japanese, and other East Asian families. The city\'s tech corridor and university research community continue to draw young professionals and scholars.',
@@ -312,6 +330,8 @@ const COMMUNITIES: Community[] = [
     color: 'text-violet-700',
     bg: 'bg-violet-50',
     border: 'border-violet-200',
+    gradient: 'from-violet-950 to-purple-900',
+    accent: 'bg-violet-500',
     population: 'German, British, Italian, Irish and Eastern European communities',
     neighborhoods: ['Dilworth', 'Myers Park', 'Plaza Midwood', 'SouthPark', 'Ballantyne'],
     description: 'Charlotte has European roots going back to German and Scots-Irish settlers in the 1700s. Today, that heritage is complemented by an active community of British, German, French, Italian, and Eastern European professionals drawn by Bank of America, Honeywell, and the broader financial services sector. The expat community is well-organized, with social clubs, international schools, and regular cultural events.',
@@ -438,8 +458,27 @@ export function RelocatePage() {
         </p>
       </section>
 
+      {/* Luxury lifestyle */}
+      <LuxuryLifestyleSection onCardClick={(ctx) => armPromptRef.current?.(ctx)} />
+
       {/* Community cards */}
-      <section id="communities" className="max-w-6xl mx-auto px-4 pb-24">
+      <section id="communities" className="bg-neutral-50 pt-16 pb-24">
+        <div className="max-w-6xl mx-auto px-4">
+
+        {/* Section heading */}
+        <div className="mb-10">
+          <p className="text-brand-500 text-sm font-semibold uppercase tracking-widest mb-2">International Communities</p>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <h2 className="font-serif text-3xl lg:text-4xl font-bold text-neutral-900">
+                Find your people before you arrive.
+              </h2>
+              <p className="text-neutral-500 mt-2 text-base leading-relaxed">
+                Charlotte is home to communities from across the globe. Explore restaurants, groceries, worship, and events by cultural community — then browse homes in the neighborhoods where your community already lives.
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* Filter pills */}
         <div className="flex flex-wrap gap-2 mb-10">
@@ -460,61 +499,66 @@ export function RelocatePage() {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {visible.map(community => {
             const isOpen = expanded === community.id;
             return (
               <div
                 key={community.id}
                 className={cn(
-                  'bg-white rounded-2xl border overflow-hidden transition-shadow hover:shadow-md',
-                  community.border,
-                  isOpen && 'md:col-span-2 lg:col-span-3',
+                  `bg-gradient-to-br ${community.gradient} rounded-2xl overflow-hidden transition-all`,
+                  isOpen ? 'md:col-span-2 lg:col-span-3' : 'hover:-translate-y-1 hover:shadow-2xl cursor-pointer',
                 )}
+                onClick={() => !isOpen && setExpanded(community.id)}
               >
-                {/* Card header */}
-                <div
-                  className={cn('p-5 cursor-pointer', community.bg)}
-                  onClick={() => setExpanded(isOpen ? null : community.id)}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <span className="text-3xl mb-2 block">{community.flag}</span>
-                      <h3 className={cn('text-lg font-serif font-bold', community.color)}>{community.name}</h3>
-                      <p className="text-sm text-neutral-500 mt-0.5">{community.tagline}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-xs text-neutral-400">{community.population}</p>
-                    </div>
-                  </div>
+                {/* Card face — always visible */}
+                <div className="relative p-6 pr-36 flex flex-col min-h-[240px]">
+                  {/* Population tag */}
+                  <span className="absolute top-5 right-5 max-w-[8rem] text-right text-xs font-semibold text-white/60 bg-white/10 px-2.5 py-1 rounded-full leading-snug">
+                    {community.population}
+                  </span>
 
-                  {/* Neighborhoods */}
-                  <div className="flex flex-wrap gap-1.5 mt-3">
+                  {/* Flag */}
+                  <span className="text-4xl mb-4 block">{community.flag}</span>
+
+                  {/* Name + tagline */}
+                  <h3 className="font-serif text-lg font-bold text-white mb-1">{community.name}</h3>
+                  <p className="text-sm text-white/60 mb-4">{community.tagline}</p>
+
+                  {/* Neighborhood pills */}
+                  <div className="flex flex-wrap gap-1.5 mt-auto">
                     {community.neighborhoods.map(n => (
-                      <span key={n} className="text-xs bg-white/70 text-neutral-600 px-2 py-0.5 rounded-full border border-white">
+                      <span key={n} className="text-xs bg-white/10 text-white/70 px-2 py-0.5 rounded-full">
                         {n}
                       </span>
                     ))}
                   </div>
+
+                  {/* Collapsed CTA */}
+                  {!isOpen && (
+                    <div className="mt-5 flex items-center gap-1.5 text-sm font-semibold text-white/80 group-hover:gap-2.5 transition-all">
+                      Explore community <ArrowRight className="w-4 h-4" />
+                    </div>
+                  )}
                 </div>
 
-                {/* Expanded detail */}
+                {/* Expanded detail panel */}
                 {isOpen && (
-                  <div className="p-5">
-                    <p className="text-neutral-600 leading-relaxed mb-6 text-sm">{community.description}</p>
+                  <div className="border-t border-white/10 bg-black/20 px-6 py-6">
+                    <p className="text-white/80 leading-relaxed mb-6 text-sm max-w-3xl">{community.description}</p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                       {/* Restaurants */}
                       <div>
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <Utensils className="w-3.5 h-3.5 text-neutral-400" />
-                          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Restaurants</p>
+                        <div className="flex items-center gap-1.5 mb-3">
+                          <Utensils className="w-3.5 h-3.5 text-white/40" />
+                          <p className="text-xs font-semibold text-white/40 uppercase tracking-wide">Restaurants</p>
                         </div>
-                        <ul className="space-y-1.5">
+                        <ul className="space-y-2">
                           {community.restaurants.map(r => (
                             <li key={r.name}>
-                              <p className="text-sm font-medium text-neutral-800">{r.name}</p>
-                              <p className="text-xs text-neutral-400">{r.area}</p>
+                              <p className="text-sm font-medium text-white">{r.name}</p>
+                              <p className="text-xs text-white/50">{r.area}</p>
                             </li>
                           ))}
                         </ul>
@@ -522,15 +566,15 @@ export function RelocatePage() {
 
                       {/* Markets */}
                       <div>
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <ShoppingBag className="w-3.5 h-3.5 text-neutral-400" />
-                          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Grocery & Markets</p>
+                        <div className="flex items-center gap-1.5 mb-3">
+                          <ShoppingBag className="w-3.5 h-3.5 text-white/40" />
+                          <p className="text-xs font-semibold text-white/40 uppercase tracking-wide">Grocery & Markets</p>
                         </div>
-                        <ul className="space-y-1.5">
+                        <ul className="space-y-2">
                           {community.markets.map(m => (
                             <li key={m.name}>
-                              <p className="text-sm font-medium text-neutral-800">{m.name}</p>
-                              <p className="text-xs text-neutral-400">{m.area}</p>
+                              <p className="text-sm font-medium text-white">{m.name}</p>
+                              <p className="text-xs text-white/50">{m.area}</p>
                             </li>
                           ))}
                         </ul>
@@ -538,15 +582,15 @@ export function RelocatePage() {
 
                       {/* Worship */}
                       <div>
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <Heart className="w-3.5 h-3.5 text-neutral-400" />
-                          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Worship</p>
+                        <div className="flex items-center gap-1.5 mb-3">
+                          <Heart className="w-3.5 h-3.5 text-white/40" />
+                          <p className="text-xs font-semibold text-white/40 uppercase tracking-wide">Worship</p>
                         </div>
-                        <ul className="space-y-1.5">
+                        <ul className="space-y-2">
                           {community.worship.map(w => (
                             <li key={w.name}>
-                              <p className="text-sm font-medium text-neutral-800">{w.name}</p>
-                              <p className="text-xs text-neutral-400">{w.type}</p>
+                              <p className="text-sm font-medium text-white">{w.name}</p>
+                              <p className="text-xs text-white/50">{w.type}</p>
                             </li>
                           ))}
                         </ul>
@@ -554,26 +598,27 @@ export function RelocatePage() {
 
                       {/* Events */}
                       <div>
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <CalendarDays className="w-3.5 h-3.5 text-neutral-400" />
-                          <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">Events</p>
+                        <div className="flex items-center gap-1.5 mb-3">
+                          <CalendarDays className="w-3.5 h-3.5 text-white/40" />
+                          <p className="text-xs font-semibold text-white/40 uppercase tracking-wide">Events</p>
                         </div>
-                        <ul className="space-y-1">
+                        <ul className="space-y-1.5">
                           {community.events.map(e => (
-                            <li key={e} className="text-sm text-neutral-700">{e}</li>
+                            <li key={e} className="text-sm text-white/80">{e}</li>
                           ))}
                         </ul>
                       </div>
                     </div>
 
-                    {/* CTA */}
-                    <div className={cn('mt-6 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4', community.bg)}>
-                      <p className="text-sm font-medium text-neutral-700">
+                    {/* CTA row */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-white/10">
+                      <p className="text-sm text-white/60">
                         Find your home near the {community.name} community
                       </p>
                       <div className="flex flex-wrap gap-3 shrink-0">
                         <Link
                           href="/portal/appointments"
+                          onClick={e => e.stopPropagation()}
                           className="inline-flex items-center gap-1.5 text-sm font-semibold bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg transition-colors"
                         >
                           Schedule a Consultation
@@ -582,30 +627,25 @@ export function RelocatePage() {
                           href={`https://karstenmiller.kw.com/search/sale?q=${encodeURIComponent(`${community.neighborhoods[0]}, ${community.mlsCity}, NC`)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          onClick={() => armPromptRef.current?.(`${community.neighborhoods[0]}, ${community.mlsCity} — ${community.name} community`)}
-                          className={cn('inline-flex items-center gap-1.5 text-sm font-semibold border px-4 py-2 rounded-lg transition-colors hover:bg-white/60', community.color, community.border)}
+                          onClick={e => { e.stopPropagation(); armPromptRef.current?.(`${community.neighborhoods[0]}, ${community.mlsCity} — ${community.name} community`); }}
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors"
                         >
                           Browse Listings <ArrowRight className="w-3.5 h-3.5" />
                         </a>
+                        <button
+                          onClick={e => { e.stopPropagation(); setExpanded(null); }}
+                          className="text-sm text-white/40 hover:text-white/70 transition-colors"
+                        >
+                          Collapse
+                        </button>
                       </div>
                     </div>
-                  </div>
-                )}
-
-                {/* Collapsed CTA */}
-                {!isOpen && (
-                  <div className="px-5 py-3 border-t border-neutral-100 flex items-center justify-between">
-                    <button
-                      onClick={() => setExpanded(community.id)}
-                      className={cn('text-sm font-medium flex items-center gap-1', community.color)}
-                    >
-                      See restaurants, worship & events <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
                   </div>
                 )}
               </div>
             );
           })}
+        </div>
         </div>
       </section>
 

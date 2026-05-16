@@ -184,6 +184,11 @@ All notification payloads follow the same shape. The `data.url` field drives the
 | `new_listing_match` | "New match for '[Search Name]'" | "[address], [city] — $[price]" | `/listings/[id]` |
 | `document_shared` | "Document Shared" | "Agent shared [filename]" | `/portal/messages?thread=[id]` |
 | `sync_failed` | "MLS Sync Failed" | "[MLS name] sync failed. Last sync: [time]" | `/dashboard/markets` |
+| `server_alert` | "🟡/🔴 [Alert title]" | Memory/DB status message | `/dashboard/monitor` |
+
+#### Server Alert Delivery
+
+Server alerts bypass the BullMQ pipeline (the queue may not be running). They are sent directly via `sendPushToAllAgents()` in `pushSender.ts`, which sends to **all** subscriptions in the `push_subscriptions` table. This works because only agents subscribe from the dashboard. The health monitor job (`jobs/monitor/healthMonitor.ts`) triggers these alerts every 5 minutes with a 30-minute per-type cooldown.
 
 ---
 
