@@ -23,15 +23,30 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh the session — this is the key step that syncs client cookies to server
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+
+  // Protect /portal — any authenticated user
+  if (pathname.startsWith('/portal') && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/auth/login';
+    url.searchParams.set('next', pathname);
+    return NextResponse.redirect(url);
+  }
+
+  // Protect /dashboard — agents only
+  if (pathname.startsWith('/dashboard') && (!user || user.user_metadata?.role !== 'agent')) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/';
+    return NextResponse.redirect(url);
+  }
 
   return supabaseResponse;
 }
 
 export const config = {
   matcher: [
-    // Run on all routes except static files and Next.js internals
     '/((?!_next/static|_next/image|favicon.ico|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
