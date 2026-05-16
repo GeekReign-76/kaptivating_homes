@@ -27,8 +27,8 @@ export function LoginForm() {
     if (!supabase) { setError('Auth not configured.'); setBusy(false); return; }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) { setError(error.message); setBusy(false); return; }
-    router.refresh();
-    router.push(next);
+    // Hard redirect so the browser sends a fresh request with all session cookies
+    window.location.href = next;
   }
 
   async function handleMagicLink(e: React.FormEvent) {
