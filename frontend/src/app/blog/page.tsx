@@ -6,8 +6,18 @@ import { apiClient }           from '@/lib/apiClient';
 import { fetchWordPressPosts } from '@/lib/wordpressFeed';
 
 export const metadata: Metadata = {
-  title: 'Blog | Kaptivating Homes by Karsten',
-  description: 'Real estate tips, market updates, and local guides from Karsten Miller, REALTOR®.',
+  title: 'Charlotte NC Real Estate Blog | Karsten Miller',
+  description: 'Real estate tips, Charlotte NC market updates, neighborhood guides, and relocation advice from Karsten Miller, REALTOR® at Keller Williams Ballantyne.',
+  keywords: [
+    'Charlotte NC real estate blog',
+    'Charlotte housing market updates',
+    'home buying tips Charlotte NC',
+    'home selling tips Charlotte NC',
+    'Charlotte NC neighborhood guides',
+    'Karsten Miller blog',
+    'relocating to Charlotte tips',
+  ],
+  alternates: { canonical: 'https://kaptivatinghomesbykarsten.com/blog' },
 };
 
 export const revalidate = 600;

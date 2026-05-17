@@ -5,8 +5,19 @@ import { SaveListingPrompt } from '@/components/listings/SaveListingPrompt';
 import { KwSearchPane }      from '@/components/listings/KwSearchPane';
 
 export const metadata: Metadata = {
-  title: 'Search Properties | Kaptivating Homes by Karsten',
-  description: 'Browse homes for sale in Charlotte, NC and surrounding communities with Karsten Miller, REALTOR®.',
+  title: 'Search Homes for Sale in Charlotte NC',
+  description: 'Search homes for sale in Charlotte, NC and surrounding communities — Ballantyne, SouthPark, Steele Creek, Matthews, Huntersville, and more. Powered by Karsten Miller, REALTOR® at Keller Williams Ballantyne.',
+  keywords: [
+    'homes for sale Charlotte NC',
+    'Charlotte NC MLS search',
+    'Ballantyne homes for sale',
+    'SouthPark Charlotte homes',
+    'Steele Creek homes for sale',
+    'Matthews NC homes',
+    'Huntersville homes for sale',
+    'Charlotte NC real estate listings',
+  ],
+  alternates: { canonical: 'https://kaptivatinghomesbykarsten.com/listings' },
 };
 
 export default function ListingsPage({

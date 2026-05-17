@@ -5,9 +5,16 @@ import { ChatWidget }    from '@/components/chat/ChatWidget';
 import { KwListingsGrid } from '@/components/listings/KwListingsGrid';
 
 export const metadata: Metadata = {
-  title: 'Keller Williams Ballantyne Listings | Kaptivating Homes',
-  description:
-    'Browse active listings from the Keller Williams Ballantyne office. Connect with Karsten Miller, REALTOR® to schedule a showing.',
+  title: 'Active Listings | Keller Williams Ballantyne',
+  description: 'Browse active listings from Karsten Miller, REALTOR® at Keller Williams Ballantyne. View current homes for sale in Charlotte, NC and schedule a showing today.',
+  keywords: [
+    'Keller Williams Ballantyne listings',
+    'active listings Charlotte NC',
+    'Charlotte NC homes for sale',
+    'Karsten Miller listings',
+    'schedule a showing Charlotte NC',
+  ],
+  alternates: { canonical: 'https://kaptivatinghomesbykarsten.com/properties' },
 };
 
 export default function PropertiesPage() {
