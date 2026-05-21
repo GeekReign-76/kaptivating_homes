@@ -60,10 +60,26 @@ async function apiFetch<T>(
 
 function getStoredToken(): string | null {
   try {
-    const key = Object.keys(localStorage).find(k => k.endsWith('-auth-token'));
-    if (!key) return null;
-    const parsed = JSON.parse(localStorage.getItem(key) ?? '{}');
-    return parsed?.access_token ?? null;
+    // Check localStorage first
+    const lsKey = Object.keys(localStorage).find(k => k.endsWith('-auth-token'));
+    if (lsKey) {
+      const parsed = JSON.parse(localStorage.getItem(lsKey) ?? '{}');
+      if (parsed?.access_token) return parsed.access_token;
+    }
+
+    // Fall back to cookie (Supabase SSR stores token in cookie)
+    const cookieMatch = document.cookie
+      .split('; ')
+      .find(row => row.includes('-auth-token='));
+    if (cookieMatch) {
+      const raw = decodeURIComponent(cookieMatch.split('=').slice(1).join('='));
+      // Cookie may be a JSON array [access_token, refresh_token] or a JSON object
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed[0] ?? null;
+      if (parsed?.access_token) return parsed.access_token;
+    }
+
+    return null;
   } catch {
     return null;
   }
