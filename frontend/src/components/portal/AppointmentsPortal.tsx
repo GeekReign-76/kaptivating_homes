@@ -162,7 +162,10 @@ function BookingForm({ types, onBooked }: { types: any[]; onBooked: (a: any) => 
 
   async function loadSlots(tId: string) {
     setLoading(true);
-    const res: any = await api.appointments.slots({ appointment_type: tId });
+    const now   = new Date();
+    const start = now.toISOString().split('T')[0];
+    const end   = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const res: any = await api.appointments.slots({ appointment_type_id: tId, start_date: start, end_date: end });
     setSlots(Array.isArray(res) ? res : []);
     setLoading(false);
     setStep('slot');
@@ -173,10 +176,11 @@ function BookingForm({ types, onBooked }: { types: any[]; onBooked: (a: any) => 
     setLoading(true);
     const slot = slots[slotIdx];
     const apt  = await api.appointments.book({
-      appointment_type: typeId,
-      requested_start:  slot.start,
-      requested_end:    slot.end,
-      notes,
+      appointment_type_id: typeId,
+      requested_start:     slot.start,
+      requested_end:       slot.end,
+      booking_type:        'slot',
+      client_note:         notes || undefined,
     });
     onBooked(apt);
     setStep('done');
