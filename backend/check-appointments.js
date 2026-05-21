@@ -9,19 +9,29 @@ const db = createClient(
 );
 
 async function main() {
+  // First fetch one raw row to see actual column names
+  const { data: sample, error: sampleErr } = await db
+    .from('appointments')
+    .select('*')
+    .limit(1);
+
+  if (sampleErr) {
+    console.error('Error:', sampleErr.message);
+    process.exit(1);
+  }
+
+  if (!sample || sample.length === 0) {
+    console.log('No appointments found in the database.');
+    return;
+  }
+
+  console.log('Columns available:', Object.keys(sample[0]).join(', '));
+  console.log('\nRaw first row:\n', JSON.stringify(sample[0], null, 2));
+
+  // Now fetch all with safe columns
   const { data, error } = await db
     .from('appointments')
-    .select(`
-      id,
-      status,
-      appointment_type_id,
-      requested_start,
-      confirmed_start,
-      notes,
-      created_at,
-      client:users!appointments_client_id_fkey ( id, full_name, email, phone ),
-      appointment_types ( name )
-    `)
+    .select('*')
     .order('created_at', { ascending: false })
     .limit(50);
 
@@ -30,25 +40,7 @@ async function main() {
     process.exit(1);
   }
 
-  if (!data || data.length === 0) {
-    console.log('No appointments found in the database.');
-    return;
-  }
-
-  console.log(`Found ${data.length} appointment(s):\n`);
-  data.forEach((a, i) => {
-    console.log(`--- #${i + 1} ---`);
-    console.log(`ID:         ${a.id}`);
-    console.log(`Status:     ${a.status}`);
-    console.log(`Type:       ${a.appointment_types?.name ?? a.appointment_type_id}`);
-    console.log(`Requested:  ${a.requested_start}`);
-    console.log(`Confirmed:  ${a.confirmed_start ?? 'Not yet confirmed'}`);
-    console.log(`Client:     ${a.client?.full_name ?? 'Unknown'} <${a.client?.email ?? 'no email'}>`);
-    console.log(`Phone:      ${a.client?.phone ?? 'none'}`);
-    console.log(`Notes:      ${a.notes ?? 'none'}`);
-    console.log(`Created:    ${a.created_at}`);
-    console.log('');
-  });
+  console.log(`\nFound ${data.length} appointment(s) total.`);
 }
 
 main();
