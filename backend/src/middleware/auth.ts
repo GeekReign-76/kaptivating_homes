@@ -15,11 +15,13 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { createClient }                    from '@supabase/supabase-js';
+import ws                                  from 'ws';
 
 // Use the anon key here — we only need to verify the JWT, not bypass RLS
 const supabaseAuth = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_ANON_KEY!,
+  { realtime: { transport: ws as any } },
 );
 
 export async function authMiddleware(
