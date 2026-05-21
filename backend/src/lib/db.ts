@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import ws from 'ws';
 
 /**
  * Supabase service-role client for backend use only.
@@ -10,5 +11,6 @@ export const db = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
   {
     auth: { persistSession: false },
+    realtime: { transport: ws as any },
   }
 );
