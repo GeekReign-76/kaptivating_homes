@@ -14,12 +14,13 @@ async function main() {
     .select(`
       id,
       status,
-      appointment_type,
+      appointment_type_id,
       requested_start,
       confirmed_start,
       notes,
       created_at,
-      client:users!appointments_client_id_fkey ( id, full_name, email, phone )
+      client:users!appointments_client_id_fkey ( id, full_name, email, phone ),
+      appointment_types ( name )
     `)
     .order('created_at', { ascending: false })
     .limit(50);
@@ -39,7 +40,7 @@ async function main() {
     console.log(`--- #${i + 1} ---`);
     console.log(`ID:         ${a.id}`);
     console.log(`Status:     ${a.status}`);
-    console.log(`Type:       ${a.appointment_type}`);
+    console.log(`Type:       ${a.appointment_types?.name ?? a.appointment_type_id}`);
     console.log(`Requested:  ${a.requested_start}`);
     console.log(`Confirmed:  ${a.confirmed_start ?? 'Not yet confirmed'}`);
     console.log(`Client:     ${a.client?.full_name ?? 'Unknown'} <${a.client?.email ?? 'no email'}>`);
