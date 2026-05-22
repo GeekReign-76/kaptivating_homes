@@ -522,6 +522,20 @@ appointmentsRouter.delete('/availability/blocks/:idOrDate', authMiddleware, requ
   return res.json({ data: { message: 'Block removed.' }, error: null });
 });
 
+// -------------------------------------------------------------------------
+// GET /api/v1/appointments/appointment-types/all
+// Agent only — returns ALL types (including inactive) with full fields
+// -------------------------------------------------------------------------
+
+appointmentsRouter.get('/appointment-types/all', authMiddleware, requireAgent, async (_req, res) => {
+  const { data, error } = await db
+    .from('appointment_types')
+    .select('id, name, description, duration_minutes, buffer_minutes, color, is_active, display_order')
+    .order('display_order');
+  if (error) return res.status(500).json({ data: null, error: { code: 'SERVER_ERROR', message: error.message } });
+  return res.json({ data, error: null });
+});
+
 appointmentsRouter.patch('/appointment-types/:id', authMiddleware, requireAgent, async (req, res) => {
   const allowed = ['name', 'description', 'duration_minutes', 'buffer_minutes', 'is_active', 'display_order'];
   const updates: Record<string, any> = {};

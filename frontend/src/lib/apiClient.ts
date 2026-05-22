@@ -313,7 +313,7 @@ const realApi = {
     getBlockedDates:    () => apiFetch<any[]>('/api/v1/appointments/availability/blocks').then((rows: any[]) => rows.map((r: any) => r.blocked_date)),
     addBlockedDate:     (date: string) => apiFetch<any>('/api/v1/appointments/availability/blocks', { method: 'POST', body: JSON.stringify({ blocked_date: date }) }),
     removeBlockedDate:  (id: string) => apiFetch<any>(`/api/v1/appointments/availability/blocks/${id}`, { method: 'DELETE' }),
-    getAppointmentTypes:   () => apiFetch<any[]>('/api/v1/appointments/appointment-types'),
+    getAppointmentTypes:   () => apiFetch<any[]>('/api/v1/appointments/appointment-types/all'),
     updateAppointmentType: (id: string, body: any) => apiFetch<any>(`/api/v1/appointments/appointment-types/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   },
 };

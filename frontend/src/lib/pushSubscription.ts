@@ -15,6 +15,27 @@
 
 const SERVICE_WORKER_PATH = '/service-worker.js';
 const VAPID_PUBLIC_KEY    = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
+const API_BASE            = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+
+function getStoredToken(): string | null {
+  try {
+    const lsKey = Object.keys(localStorage).find(k => k.endsWith('-auth-token'));
+    if (lsKey) {
+      const parsed = JSON.parse(localStorage.getItem(lsKey) ?? '{}');
+      if (parsed?.access_token) return parsed.access_token;
+    }
+    const cookieMatch = document.cookie
+      .split('; ')
+      .find(row => row.includes('-auth-token='));
+    if (cookieMatch) {
+      const raw = decodeURIComponent(cookieMatch.split('=').slice(1).join('='));
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed[0] ?? null;
+      if (parsed?.access_token) return parsed.access_token;
+    }
+    return null;
+  } catch { return null; }
+}
 
 // -------------------------------------------------------------------------
 // requestPushPermission
@@ -99,10 +120,14 @@ export async function unsubscribeFromPush(): Promise<void> {
 
   // Remove from backend
   try {
-    await fetch('/api/v1/push/subscribe', {
+    const token = getStoredToken();
+    await fetch(`${API_BASE}/api/v1/push/subscribe`, {
       method:  'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ endpoint }),
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ endpoint }),
     });
   } catch (err) {
     console.warn('[push] Failed to remove subscription from backend:', err);
@@ -115,10 +140,14 @@ export async function unsubscribeFromPush(): Promise<void> {
 
 async function sendSubscriptionToBackend(subscription: PushSubscription): Promise<void> {
   const subscriptionJson = subscription.toJSON();
+  const token = getStoredToken();
 
-  await fetch('/api/v1/push/subscribe', {
+  const res = await fetch(`${API_BASE}/api/v1/push/subscribe`, {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: JSON.stringify({
       endpoint:   subscription.endpoint,
       p256dh_key: subscriptionJson.keys?.p256dh,
@@ -126,6 +155,10 @@ async function sendSubscriptionToBackend(subscription: PushSubscription): Promis
       user_agent: navigator.userAgent,
     }),
   });
+
+  if (!res.ok) {
+    console.error('[push] Failed to save subscription to backend:', res.status);
+  }
 }
 
 // -------------------------------------------------------------------------
