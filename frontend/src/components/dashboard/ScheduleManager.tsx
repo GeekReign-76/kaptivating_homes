@@ -40,9 +40,20 @@ export function ScheduleManager() {
       (api.schedule as any).getBlockedDates(),
       (api.schedule as any).getAppointmentTypes(),
     ]).then(([avail, blocked, types]) => {
-      setAvailability(avail);
+      const DAY_LABELS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const allDays = [0,1,2,3,4,5,6].map(dow => {
+        const existing = avail.find((w: any) => w.day_of_week === dow);
+        return {
+          day_of_week: dow,
+          label:       DAY_LABELS[dow],
+          enabled:     existing ? (existing.enabled ?? existing.is_active ?? false) : false,
+          start_time:  existing?.start_time?.slice(0,5) ?? '08:00',
+          end_time:    existing?.end_time?.slice(0,5)   ?? '20:00',
+        };
+      });
+      setAvailability(allDays);
       setBlockedDates(blocked);
-      setApptTypes(types);
+      setApptTypes(types.map((t: any) => ({ ...t, enabled: t.enabled ?? t.is_active ?? false })));
     }).finally(() => setLoading(false));
   }, []);
 
