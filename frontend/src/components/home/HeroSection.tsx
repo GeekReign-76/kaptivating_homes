@@ -87,7 +87,7 @@ export function HeroSection() {
         <div className="flex items-center justify-center gap-8 mt-12 text-white/90">
           {[
             ['150+', 'Homes Sold'],
-            ['3',    'States'],
+            ['2',    'States'],
             ['10+',  'Years Exp.'],
           ].map(([val, label]) => (
             <div key={label} className="text-center">
