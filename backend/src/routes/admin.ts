@@ -32,11 +32,11 @@ adminRouter.get('/health', async (_req: Request, res: Response) => {
     dbOk = !error;
   } catch { /* db unreachable */ }
 
-  // Derive status
+  // Derive status — use RSS (actual system memory) not heap percentage
   let status: 'healthy' | 'degraded' | 'critical' = 'healthy';
-  if (!dbOk || snap.memory.pct >= 90) {
+  if (!dbOk || snap.memory.rss >= 450) {
     status = 'critical';
-  } else if (snap.memory.pct >= 80 || dbLatency > 3000) {
+  } else if (snap.memory.rss >= 300 || dbLatency > 3000) {
     status = 'degraded';
   }
 

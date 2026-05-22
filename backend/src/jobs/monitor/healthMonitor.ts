@@ -18,8 +18,8 @@ import { sendPushToAllAgents }   from '../notifications/pushSender';
 
 const CHECK_INTERVAL_MS  = 5  * 60 * 1000;   // check every 5 minutes
 const ALERT_COOLDOWN_MS  = 30 * 60 * 1000;   // same alert type no more than every 30 min
-const MEMORY_WARN_PCT    = 80;
-const MEMORY_CRIT_PCT    = 90;
+const MEMORY_WARN_MB     = 300;               // RSS warn at 300MB (server has ~636MB free)
+const MEMORY_CRIT_MB     = 450;               // RSS critical at 450MB
 const DB_SLOW_THRESHOLD  = 3000;              // ms
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -46,23 +46,22 @@ async function runCheck(): Promise<void> {
 
 async function checkMemory(): Promise<void> {
   const mem     = process.memoryUsage();
-  const pct     = Math.round((mem.heapUsed / mem.heapTotal) * 100);
+  const rssMB   = toMB(mem.rss);
   const usedMB  = toMB(mem.heapUsed);
   const totalMB = toMB(mem.heapTotal);
-  const rssMB   = toMB(mem.rss);
+  const pct     = Math.round((mem.heapUsed / mem.heapTotal) * 100);
 
-  if (pct >= MEMORY_CRIT_PCT) {
+  if (rssMB >= MEMORY_CRIT_MB) {
     await maybeAlert('memory_crit',
       '🔴 Server Memory Critical',
-      `Heap at ${pct}% (${usedMB}/${totalMB} MB, RSS ${rssMB} MB). Restart imminent — check GoDaddy panel.`,
+      `RSS at ${rssMB} MB (heap ${usedMB}/${totalMB} MB). Restart recommended — check GoDaddy panel.`,
     );
-  } else if (pct >= MEMORY_WARN_PCT) {
+  } else if (rssMB >= MEMORY_WARN_MB) {
     await maybeAlert('memory_warn',
       '🟡 Server Memory High',
-      `Heap at ${pct}% (${usedMB}/${totalMB} MB). Monitor closely — may need a restart.`,
+      `RSS at ${rssMB} MB (heap ${usedMB}/${totalMB} MB). Monitor closely.`,
     );
   } else {
-    // Clear cooldowns when healthy so next spike re-alerts
     delete lastAlertAt['memory_crit'];
     delete lastAlertAt['memory_warn'];
   }
