@@ -23,8 +23,18 @@ interface HealthData {
 function getToken(): string | null {
   try {
     const key = Object.keys(localStorage).find(k => k.endsWith('-auth-token'));
-    if (!key) return null;
-    return JSON.parse(localStorage.getItem(key) ?? '{}')?.access_token ?? null;
+    if (key) {
+      const token = JSON.parse(localStorage.getItem(key) ?? '{}')?.access_token;
+      if (token) return token;
+    }
+    const cookieMatch = document.cookie.split('; ').find(r => r.includes('-auth-token='));
+    if (cookieMatch) {
+      const raw = decodeURIComponent(cookieMatch.split('=').slice(1).join('='));
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed[0] ?? null;
+      if (parsed?.access_token) return parsed.access_token;
+    }
+    return null;
   } catch { return null; }
 }
 
