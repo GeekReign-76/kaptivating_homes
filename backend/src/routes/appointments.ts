@@ -483,6 +483,15 @@ appointmentsRouter.put('/availability/windows', requireAgent, async (req, res) =
   return res.json({ data, error: null });
 });
 
+appointmentsRouter.get('/availability/blocks', requireAgent, async (_req, res) => {
+  const { data, error } = await db
+    .from('availability_blocks')
+    .select('*')
+    .order('blocked_date');
+  if (error) return res.status(500).json({ data: null, error: { code: 'SERVER_ERROR', message: error.message } });
+  return res.json({ data, error: null });
+});
+
 appointmentsRouter.post('/availability/blocks', requireAgent, async (req, res) => {
   const { blocked_date, start_time, end_time, reason } = req.body;
 
@@ -500,10 +509,40 @@ appointmentsRouter.post('/availability/blocks', requireAgent, async (req, res) =
   return res.status(201).json({ data, error: null });
 });
 
-appointmentsRouter.delete('/availability/blocks/:id', requireAgent, async (req, res) => {
-  const { error } = await db.from('availability_blocks').delete().eq('id', req.params.id);
+appointmentsRouter.delete('/availability/blocks/:idOrDate', requireAgent, async (req, res) => {
+  const param = req.params.idOrDate;
+  // If it looks like a date (YYYY-MM-DD), delete by blocked_date; otherwise by id
+  const isDate = /^\d{4}-\d{2}-\d{2}$/.test(param);
+  const query = isDate
+    ? db.from('availability_blocks').delete().eq('blocked_date', param)
+    : db.from('availability_blocks').delete().eq('id', param);
+  const { error } = await query;
   if (error) return res.status(500).json({ data: null, error: { code: 'SERVER_ERROR', message: error.message } });
   return res.json({ data: { message: 'Block removed.' }, error: null });
+});
+
+appointmentsRouter.patch('/appointment-types/:id', requireAgent, async (req, res) => {
+  const allowed = ['name', 'description', 'duration_minutes', 'buffer_minutes', 'is_active', 'display_order'];
+  const updates: Record<string, any> = {};
+  for (const key of allowed) {
+    if (key in req.body) updates[key] = req.body[key];
+  }
+  // Map frontend 'enabled' to DB 'is_active'
+  if ('enabled' in req.body) updates.is_active = req.body.enabled;
+
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ data: null, error: { code: 'VALIDATION_ERROR', message: 'No valid fields to update' } });
+  }
+
+  const { data, error } = await db
+    .from('appointment_types')
+    .update(updates)
+    .eq('id', req.params.id)
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ data: null, error: { code: 'SERVER_ERROR', message: error.message } });
+  return res.json({ data, error: null });
 });
 
 // -------------------------------------------------------------------------

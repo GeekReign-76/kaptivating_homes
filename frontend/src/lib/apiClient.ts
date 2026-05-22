@@ -308,13 +308,13 @@ const realApi = {
   },
 
   schedule: {
-    getAvailability:    () => apiFetch<any[]>('/api/v1/schedule/availability'),
-    updateAvailability: (body: any) => apiFetch<any>('/api/v1/schedule/availability', { method: 'PUT', body: JSON.stringify(body) }),
-    getBlockedDates:    () => apiFetch<string[]>('/api/v1/schedule/blocked-dates'),
-    addBlockedDate:     (date: string) => apiFetch<any>('/api/v1/schedule/blocked-dates', { method: 'POST', body: JSON.stringify({ date }) }),
-    removeBlockedDate:  (date: string) => apiFetch<any>(`/api/v1/schedule/blocked-dates/${date}`, { method: 'DELETE' }),
-    getAppointmentTypes:   () => apiFetch<any[]>('/api/v1/schedule/appointment-types'),
-    updateAppointmentType: (id: string, body: any) => apiFetch<any>(`/api/v1/schedule/appointment-types/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    getAvailability:    () => apiFetch<any[]>('/api/v1/appointments/availability/windows'),
+    updateAvailability: (body: any) => apiFetch<any>('/api/v1/appointments/availability/windows', { method: 'PUT', body: JSON.stringify({ windows: body }) }),
+    getBlockedDates:    () => apiFetch<any[]>('/api/v1/appointments/availability/blocks').then((rows: any[]) => rows.map((r: any) => r.blocked_date)),
+    addBlockedDate:     (date: string) => apiFetch<any>('/api/v1/appointments/availability/blocks', { method: 'POST', body: JSON.stringify({ blocked_date: date }) }),
+    removeBlockedDate:  (id: string) => apiFetch<any>(`/api/v1/appointments/availability/blocks/${id}`, { method: 'DELETE' }),
+    getAppointmentTypes:   () => apiFetch<any[]>('/api/v1/appointments/appointment-types'),
+    updateAppointmentType: (id: string, body: any) => apiFetch<any>(`/api/v1/appointments/appointment-types/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   },
 };
 
