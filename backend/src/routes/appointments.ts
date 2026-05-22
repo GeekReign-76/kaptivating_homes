@@ -11,6 +11,7 @@
 
 import { Router, Request, Response } from 'express';
 import { db } from '../lib/db';
+import { authMiddleware } from '../middleware/auth';
 import {
   getAvailableSlots,
   bookAppointment,
@@ -449,7 +450,7 @@ appointmentsRouter.patch('/:id/no-show', requireAgent, async (req: Request, res:
 // Availability Windows (agent only)
 // -------------------------------------------------------------------------
 
-appointmentsRouter.get('/availability/windows', requireAgent, async (_req, res) => {
+appointmentsRouter.get('/availability/windows', authMiddleware, requireAgent, async (_req, res) => {
   const { data, error } = await db
     .from('availability_windows')
     .select('*')
@@ -458,7 +459,7 @@ appointmentsRouter.get('/availability/windows', requireAgent, async (_req, res) 
   return res.json({ data, error: null });
 });
 
-appointmentsRouter.put('/availability/windows', requireAgent, async (req, res) => {
+appointmentsRouter.put('/availability/windows', authMiddleware, requireAgent, async (req, res) => {
   const { windows } = req.body;
 
   if (!Array.isArray(windows) || windows.length === 0) {
@@ -483,7 +484,7 @@ appointmentsRouter.put('/availability/windows', requireAgent, async (req, res) =
   return res.json({ data, error: null });
 });
 
-appointmentsRouter.get('/availability/blocks', requireAgent, async (_req, res) => {
+appointmentsRouter.get('/availability/blocks', authMiddleware, requireAgent, async (_req, res) => {
   const { data, error } = await db
     .from('availability_blocks')
     .select('*')
@@ -492,7 +493,7 @@ appointmentsRouter.get('/availability/blocks', requireAgent, async (_req, res) =
   return res.json({ data, error: null });
 });
 
-appointmentsRouter.post('/availability/blocks', requireAgent, async (req, res) => {
+appointmentsRouter.post('/availability/blocks', authMiddleware, requireAgent, async (req, res) => {
   const { blocked_date, start_time, end_time, reason } = req.body;
 
   if (!blocked_date) {
@@ -509,7 +510,7 @@ appointmentsRouter.post('/availability/blocks', requireAgent, async (req, res) =
   return res.status(201).json({ data, error: null });
 });
 
-appointmentsRouter.delete('/availability/blocks/:idOrDate', requireAgent, async (req, res) => {
+appointmentsRouter.delete('/availability/blocks/:idOrDate', authMiddleware, requireAgent, async (req, res) => {
   const param = req.params.idOrDate;
   // If it looks like a date (YYYY-MM-DD), delete by blocked_date; otherwise by id
   const isDate = /^\d{4}-\d{2}-\d{2}$/.test(param);
@@ -521,7 +522,7 @@ appointmentsRouter.delete('/availability/blocks/:idOrDate', requireAgent, async 
   return res.json({ data: { message: 'Block removed.' }, error: null });
 });
 
-appointmentsRouter.patch('/appointment-types/:id', requireAgent, async (req, res) => {
+appointmentsRouter.patch('/appointment-types/:id', authMiddleware, requireAgent, async (req, res) => {
   const allowed = ['name', 'description', 'duration_minutes', 'buffer_minutes', 'is_active', 'display_order'];
   const updates: Record<string, any> = {};
   for (const key of allowed) {
