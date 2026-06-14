@@ -187,12 +187,12 @@ appointmentsRouter.post('/public-book', async (req: Request, res: Response) => {
     const { data: appointment, error: apptErr } = await db
       .from('appointments')
       .insert({
-        client_id:        userId,
-        appointment_type: appointment_type,
-        status:           'pending',
-        requested_start:  requestedStart.toISOString(),
-        requested_end:    requestedEnd.toISOString(),
-        notes:            appointmentNotes || null,
+        client_id:          userId,
+        appointment_type_id: apptType?.id ?? null,
+        status:             'pending',
+        requested_start:    requestedStart.toISOString(),
+        requested_end:      requestedEnd.toISOString(),
+        client_note:        appointmentNotes || null,
       })
       .select()
       .single();
@@ -292,7 +292,7 @@ appointmentsRouter.get('/', requireAuth, async (req: Request, res: Response) => 
       appointment_types ( id, name, duration_minutes, color ),
       client:users!appointments_client_id_fkey ( id, full_name, email, phone )
     `, { count: 'exact' })
-    .order('confirmed_start', { ascending: true })
+    .order('requested_start', { ascending: true })
     .range(offset, offset + limitNum - 1);
 
   // Role-based filtering
@@ -308,9 +308,9 @@ appointmentsRouter.get('/', requireAuth, async (req: Request, res: Response) => 
     query = query.in('status', statuses);
   }
 
-  // Date range filter
-  if (from) query = query.gte('confirmed_start', new Date(from as string).toISOString());
-  if (to)   query = query.lte('confirmed_start', new Date(to as string).toISOString());
+  // Date range filter (use requested_start so pending appointments are included)
+  if (from) query = query.gte('requested_start', new Date(from as string).toISOString());
+  if (to)   query = query.lte('requested_start', new Date(to as string).toISOString());
 
   const { data, error, count } = await query;
 
@@ -576,11 +576,13 @@ function requireAuth(req: Request, res: Response, next: Function): void {
 }
 
 function requireAgent(req: Request, res: Response, next: Function): void {
-  if (!req.user || req.user.role !== 'agent') {
-    res.status(403).json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Agent access required' } });
-    return;
-  }
-  next();
+  authMiddleware(req, res, () => {
+    if (!req.user || req.user.role !== 'agent') {
+      res.status(403).json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Agent access required' } });
+      return;
+    }
+    next();
+  });
 }
 
 // -------------------------------------------------------------------------

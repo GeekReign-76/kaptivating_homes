@@ -10,11 +10,14 @@ import { api }      from '@/lib/apiClient';
 import { cn, formatDate } from '@/lib/utils';
 
 const STATUS_STYLES: Record<string, { badge: string; label: string }> = {
-  pending:          { badge: 'bg-amber-100 text-amber-700',  label: 'Pending'          },
-  confirmed:        { badge: 'bg-green-100 text-green-700',  label: 'Confirmed'        },
-  counter_proposed: { badge: 'bg-blue-100 text-blue-700',    label: 'Counter Proposed' },
-  cancelled:        { badge: 'bg-neutral-100 text-neutral-500', label: 'Cancelled'     },
-  completed:        { badge: 'bg-neutral-100 text-neutral-500', label: 'Completed'     },
+  pending:           { badge: 'bg-amber-100 text-amber-700',     label: 'Pending'          },
+  suggested:         { badge: 'bg-amber-100 text-amber-700',     label: 'Suggested'        },
+  confirmed:         { badge: 'bg-green-100 text-green-700',     label: 'Confirmed'        },
+  counter_proposed:  { badge: 'bg-blue-100 text-blue-700',       label: 'Counter Proposed' },
+  cancelled_client:  { badge: 'bg-neutral-100 text-neutral-500', label: 'Cancelled'        },
+  cancelled_agent:   { badge: 'bg-neutral-100 text-neutral-500', label: 'Cancelled'        },
+  completed:         { badge: 'bg-neutral-100 text-neutral-500', label: 'Completed'        },
+  no_show:           { badge: 'bg-red-100 text-red-500',         label: 'No Show'          },
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -56,12 +59,13 @@ export function AppointmentsManager() {
     if (!window.confirm('Cancel this appointment?')) return;
     setActing(id);
     await api.appointments.cancel(id);
-    setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'cancelled' } : a));
+    setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'cancelled_agent' } : a));
     setActing(null);
   }
 
-  const upcoming  = appointments.filter(a => !['cancelled','completed'].includes(a.status));
-  const past      = appointments.filter(a => ['cancelled','completed'].includes(a.status));
+  const TERMINAL = ['cancelled_client', 'cancelled_agent', 'completed', 'no_show'];
+  const upcoming  = appointments.filter(a => !TERMINAL.includes(a.status));
+  const past      = appointments.filter(a => TERMINAL.includes(a.status));
 
   function ApptRow({ appt }: { appt: any }) {
     const style    = STATUS_STYLES[appt.status] ?? STATUS_STYLES.pending;
@@ -86,7 +90,7 @@ export function AppointmentsManager() {
             </p>
           </div>
           <span className="text-xs text-neutral-400 hidden sm:block shrink-0">
-            {TYPE_LABELS[appt.appointment_type] ?? appt.appointment_type}
+            {appt.appointment_types?.name ?? TYPE_LABELS[appt.appointment_type] ?? appt.appointment_type ?? 'Appointment'}
           </span>
           <span className={cn('text-xs px-2 py-0.5 rounded-full font-medium shrink-0', style.badge)}>
             {style.label}
@@ -104,10 +108,11 @@ export function AppointmentsManager() {
                   <p className="text-neutral-500">{appt.client?.email}</p>
                   {appt.client?.phone && <p className="text-neutral-500">{appt.client.phone}</p>}
                 </div>
-                {appt.notes && (
+                {(appt.client_note || appt.agent_note) && (
                   <div>
                     <p className="text-xs text-neutral-400 uppercase tracking-wide mb-0.5">Notes</p>
-                    <p className="text-neutral-600">{appt.notes}</p>
+                    {appt.client_note && <p className="text-neutral-600">{appt.client_note}</p>}
+                    {appt.agent_note  && <p className="text-neutral-500 italic mt-0.5">Agent: {appt.agent_note}</p>}
                   </div>
                 )}
               </div>

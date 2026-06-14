@@ -10,11 +10,14 @@ import { api }     from '@/lib/apiClient';
 import { cn, formatDate } from '@/lib/utils';
 
 const STATUS_CONFIG: Record<string, { icon: any; variant: any; label: string }> = {
-  pending:          { icon: Clock,           variant: 'warning',     label: 'Pending Confirmation' },
-  confirmed:        { icon: CheckCircle2,    variant: 'success',     label: 'Confirmed' },
-  counter_proposed: { icon: ArrowRightLeft,  variant: 'warning',     label: 'New Time Proposed' },
-  cancelled:        { icon: XCircle,         variant: 'destructive', label: 'Cancelled' },
-  completed:        { icon: CheckCircle2,    variant: 'secondary',   label: 'Completed' },
+  pending:           { icon: Clock,           variant: 'warning',     label: 'Pending Confirmation' },
+  suggested:         { icon: Clock,           variant: 'warning',     label: 'Pending Confirmation' },
+  confirmed:         { icon: CheckCircle2,    variant: 'success',     label: 'Confirmed' },
+  counter_proposed:  { icon: ArrowRightLeft,  variant: 'warning',     label: 'New Time Proposed' },
+  cancelled_client:  { icon: XCircle,         variant: 'destructive', label: 'Cancelled' },
+  cancelled_agent:   { icon: XCircle,         variant: 'destructive', label: 'Cancelled by Agent' },
+  completed:         { icon: CheckCircle2,    variant: 'secondary',   label: 'Completed' },
+  no_show:           { icon: XCircle,         variant: 'destructive', label: 'No Show' },
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -51,13 +54,14 @@ export function AppointmentsPortal() {
     setBusy(id);
     try {
       await api.appointments.cancel(id);
-      setApts(prev => prev.map(a => a.id === id ? { ...a, status: 'cancelled' } : a));
+      setApts(prev => prev.map(a => a.id === id ? { ...a, status: 'cancelled_client' } : a));
     } finally { setBusy(null); }
   }
 
   const now      = new Date();
-  const upcoming = apts.filter(a => a.status !== 'cancelled' && a.status !== 'completed' && new Date(a.confirmed_start ?? a.requested_start) >= now);
-  const past     = apts.filter(a => a.status === 'completed' || a.status === 'cancelled' || new Date(a.confirmed_start ?? a.requested_start) < now);
+  const TERMINAL = ['cancelled_client', 'cancelled_agent', 'completed', 'no_show'];
+  const upcoming = apts.filter(a => !TERMINAL.includes(a.status) && new Date(a.confirmed_start ?? a.requested_start) >= now);
+  const past     = apts.filter(a => TERMINAL.includes(a.status) || new Date(a.confirmed_start ?? a.requested_start) < now);
 
   function AptCard({ apt }: { apt: any }) {
     const cfg   = STATUS_CONFIG[apt.status] ?? { icon: Clock, variant: 'secondary', label: apt.status };
@@ -67,8 +71,8 @@ export function AppointmentsPortal() {
       <div className="bg-white border border-neutral-200 rounded-xl p-5 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="font-semibold text-neutral-900">{TYPE_LABELS[apt.appointment_type] ?? apt.appointment_type}</p>
-            <p className="text-xs text-neutral-400 mt-0.5">{apt.notes}</p>
+            <p className="font-semibold text-neutral-900">{apt.appointment_types?.name ?? TYPE_LABELS[apt.appointment_type] ?? apt.appointment_type ?? 'Appointment'}</p>
+            <p className="text-xs text-neutral-400 mt-0.5">{apt.client_note}</p>
           </div>
           <Badge variant={cfg.variant} className="shrink-0 flex items-center gap-1">
             <Icon className="w-3 h-3" /> {cfg.label}
