@@ -42,11 +42,6 @@ analyticsRouter.get('/summary', async (req: Request, res: Response) => {
     });
   }
 
-  // Return cached data if still fresh
-  if (cache && cache.expiresAt > Date.now()) {
-    return res.json({ data: cache.data, error: null });
-  }
-
   try {
     const days   = Math.min(90, Math.max(1, parseInt(req.query.days as string || '30', 10)));
     const cached = cache.get(days);
