@@ -11,6 +11,10 @@ interface SaveListingPromptProps {
 export function SaveListingPrompt({ delayMs = 0 }: SaveListingPromptProps) {
   const [visible, setVisible]   = useState(delayMs === 0);
   const [open, setOpen]         = useState(false);
+  const [saved, setSaved]       = useState(false);
+  const [email, setEmail]       = useState('');
+  const [name, setName]         = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (delayMs === 0) return;
@@ -19,10 +23,6 @@ export function SaveListingPrompt({ delayMs = 0 }: SaveListingPromptProps) {
   }, [delayMs]);
 
   if (!visible) return null;
-  const [saved, setSaved]       = useState(false);
-  const [email, setEmail]       = useState('');
-  const [name, setName]         = useState('');
-  const [submitting, setSubmitting] = useState(false);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
