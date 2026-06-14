@@ -66,11 +66,17 @@ export async function createChatSession(params: {
       let guestUserId = existingUser?.id;
 
       if (!guestUserId) {
-        const { data: newUser } = await db
+        const { data: newUser, error: userErr } = await db
           .from('users')
-          .insert({ email: guestEmail.toLowerCase(), full_name: guestName ?? null, role: 'client' })
+          .insert({
+            id:        crypto.randomUUID(),
+            email:     guestEmail.toLowerCase(),
+            full_name: guestName ?? null,
+            role:      'client',
+          })
           .select('id')
           .single();
+        if (userErr) console.error('[chatService] User insert error:', userErr.message);
         guestUserId = newUser?.id ?? null;
       } else if (guestName) {
         await db.from('users').update({ full_name: guestName }).eq('id', guestUserId).is('full_name', null);
@@ -82,12 +88,12 @@ export async function createChatSession(params: {
 
         const { data: existingLead } = await db.from('leads').select('id').eq('user_id', guestUserId).maybeSingle();
         if (!existingLead) {
-          await db.from('leads').insert({
-            user_id: guestUserId,
-            source:  'chat',
-            status:  'warm',
-            notes:   initialMessage ? `First message: ${initialMessage.slice(0, 200)}` : null,
+          const { error: leadErr } = await db.from('leads').insert({
+            user_id:     guestUserId,
+            source:      'chat',
+            agent_notes: initialMessage ? `First message: ${initialMessage.slice(0, 200)}` : null,
           });
+          if (leadErr) console.error('[chatService] Lead insert error:', leadErr.message);
         }
       }
     } catch (err) {

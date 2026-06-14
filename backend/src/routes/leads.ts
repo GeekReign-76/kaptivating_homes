@@ -44,7 +44,7 @@ leadsRouter.post('/capture', async (req: Request, res: Response) => {
     if (!userId) {
       const { data: newUser, error: userErr } = await db
         .from('users')
-        .insert({ email: email.toLowerCase(), full_name: name ?? null, role: 'client' })
+        .insert({ id: crypto.randomUUID(), email: email.toLowerCase(), full_name: name ?? null, role: 'client' })
         .select('id')
         .single();
       if (userErr || !newUser) throw new Error(userErr?.message ?? 'Failed to create user');
@@ -63,10 +63,9 @@ leadsRouter.post('/capture', async (req: Request, res: Response) => {
 
     if (!existingLead) {
       await db.from('leads').insert({
-        user_id: userId,
-        status:  'warm',
-        source:  source ?? 'website',
-        notes:   context ? `Captured via: ${context}` : null,
+        user_id:     userId,
+        source:      source ?? 'website',
+        agent_notes: context ? `Captured via: ${context}` : null,
       });
 
       // Notify the agent
@@ -102,7 +101,6 @@ leadsRouter.use(authMiddleware, requireAgent);
 
 leadsRouter.get('/', async (req: Request, res: Response) => {
   const {
-    status,
     source,
     search,
     page  = '1',
@@ -122,7 +120,6 @@ leadsRouter.get('/', async (req: Request, res: Response) => {
     .order('created_at', { ascending: false })
     .range(offset, offset + limitNum - 1);
 
-  if (status) query = query.eq('status', status);
   if (source) query = query.eq('source', source);
 
   const { data, error, count } = await query;
@@ -171,7 +168,7 @@ leadsRouter.get('/:id', async (req: Request, res: Response) => {
 // -------------------------------------------------------------------------
 
 leadsRouter.patch('/:id', async (req: Request, res: Response) => {
-  const allowed = ['status', 'notes', 'tags'];
+  const allowed = ['agent_notes', 'tags'];
   const updates: Record<string, unknown> = {};
   for (const key of allowed) {
     if (key in req.body) updates[key] = req.body[key];
