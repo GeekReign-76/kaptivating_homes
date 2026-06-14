@@ -5,8 +5,12 @@
 import { Router, Request, Response } from 'express';
 import { createThread, getThreads, getThread, markThreadAsRead } from '../services/threadService';
 import { sendMessage, markMessageRead, getMessages }              from '../services/messageService';
+import { authMiddleware }                                         from '../middleware/auth';
 
 export const threadsRouter = Router();
+
+// All thread routes require authentication (client or agent)
+threadsRouter.use(authMiddleware);
 
 // -------------------------------------------------------------------------
 // GET /api/v1/threads

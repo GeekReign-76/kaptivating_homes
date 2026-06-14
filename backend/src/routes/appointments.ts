@@ -561,15 +561,19 @@ appointmentsRouter.patch('/appointment-types/:id', authMiddleware, requireAgent,
 });
 
 // -------------------------------------------------------------------------
-// Auth middleware (attached to req.user by the main auth middleware)
+// Auth middleware
 // -------------------------------------------------------------------------
 
 function requireAuth(req: Request, res: Response, next: Function): void {
-  if (!req.user) {
-    res.status(401).json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
-    return;
-  }
-  next();
+  // Run authMiddleware first to populate req.user from the Bearer token,
+  // then verify the user is present.
+  authMiddleware(req, res, () => {
+    if (!req.user) {
+      res.status(401).json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } });
+      return;
+    }
+    next();
+  });
 }
 
 function requireAgent(req: Request, res: Response, next: Function): void {

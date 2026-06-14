@@ -25,11 +25,34 @@ export function ChatWidget() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sending, setSending]    = useState(false);
   const [error,   setError]      = useState('');
+  const lastMsgAt = useRef<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     api.chat.agentStatus().then((s: any) => setStatus(s.status ?? 'offline'));
   }, []);
+
+  // Poll for agent replies when chat is active
+  useEffect(() => {
+    if (stage !== 'active' || !sessionId) return;
+    const poll = async () => {
+      try {
+        const newMsgs: any[] = await (api.chat as any).getMessages(sessionId, lastMsgAt.current ?? undefined);
+        if (newMsgs && newMsgs.length > 0) {
+          const agentMsgs = newMsgs.filter((m: any) => m.sender_type === 'agent');
+          if (agentMsgs.length > 0) {
+            lastMsgAt.current = agentMsgs[agentMsgs.length - 1].sent_at;
+            setMsgs(prev => [
+              ...prev,
+              ...agentMsgs.map((m: any) => ({ role: 'agent' as const, content: m.content })),
+            ]);
+          }
+        }
+      } catch { /* silent */ }
+    };
+    const interval = setInterval(poll, 5000);
+    return () => clearInterval(interval);
+  }, [stage, sessionId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

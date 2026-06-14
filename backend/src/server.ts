@@ -27,6 +27,7 @@ import { leadsRouter }             from './routes/leads';
 import { blogRouter }              from './routes/blog';
 import { notificationsRouter }     from './routes/notifications';
 import { adminRouter }             from './routes/admin';
+import { analyticsRouter }        from './routes/analytics';
 import { startHealthMonitor }      from './jobs/monitor/healthMonitor';
 
 // -------------------------------------------------------------------------
@@ -58,6 +59,7 @@ app.use('/api/v1/threads',         threadsRouter);
 app.use('/api/v1/chat',            chatRouter);
 app.use('/api/v1',                 notificationsRouter); // /push/subscribe + /notifications
 app.use('/api/v1/admin',           adminRouter);         // health + push test (agent only)
+app.use('/api/v1/analytics',      analyticsRouter);     // GA4 analytics proxy (agent only)
 
 // Health check (used by Railway/Render deploy checks)
 app.get('/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));

@@ -85,6 +85,30 @@ chatRouter.get('/sessions', requireAgent, async (req: Request, res: Response) =>
 });
 
 // -------------------------------------------------------------------------
+// GET /api/v1/chat/sessions/:id/messages — public endpoint for guest polling
+// Guests poll this to receive agent replies without a WebSocket connection
+// -------------------------------------------------------------------------
+
+chatRouter.get('/sessions/:id/messages', async (req: Request, res: Response) => {
+  const { after } = req.query;
+
+  let query = db
+    .from('chat_messages')
+    .select('id, content, sender_type, sent_at')
+    .eq('session_id', req.params.id)
+    .order('sent_at', { ascending: true });
+
+  if (after) {
+    query = query.gt('sent_at', after as string);
+  }
+
+  const { data, error } = await query;
+  if (error) return res.status(500).json({ data: null, error: { code: 'SERVER_ERROR', message: error.message } });
+
+  return res.json({ data: data ?? [], error: null });
+});
+
+// -------------------------------------------------------------------------
 // GET /api/v1/chat/sessions/:id — get session with all messages
 // -------------------------------------------------------------------------
 

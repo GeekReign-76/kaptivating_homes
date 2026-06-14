@@ -145,6 +145,7 @@ const mockApi = {
     createSession:  async (body: any) => { await delay(); return { session: { id: 'sess-new', ...body, status: 'waiting', started_at: new Date().toISOString() }, agentOnline: true }; },
     sessions:       async () => { await delay(); return []; },
     getSession:     async (id: string) => { await delay(); return { session: { id, status: 'active' }, messages: [] }; },
+    getMessages:    async (_id: string, _after?: string) => { await delay(200); return []; },
     join:           async () => { await delay(); return {}; },
     sendMessage:    async (_id: string, content: string) => { await delay(); return { id: 'cm-' + Date.now(), content, sender_type: 'guest', sent_at: new Date().toISOString() }; },
     close:          async () => { await delay(); return { status: 'closed' }; },
@@ -190,6 +191,30 @@ const mockApi = {
     register:    async (body: any) => { await delay(); return { ...body, id: 'doc-' + Date.now() }; },
     downloadUrl: async () => { await delay(); return { url: '#' }; },
     delete:      async () => { await delay(); return { deleted: true }; },
+  },
+
+  analytics: {
+    summary: async (_params?: any) => {
+      await delay(400);
+      return {
+        configured: true,
+        period: '30 days',
+        totals: { sessions: 1842, users: 1204, pageviews: 5391, bounceRate: 0.42, avgSessionDuration: 187 },
+        topPages: [
+          { path: '/', views: 2104, users: 891 },
+          { path: '/properties', views: 1048, users: 512 },
+          { path: '/relocate', views: 643, users: 310 },
+          { path: '/listings', views: 411, users: 204 },
+          { path: '/blog', views: 185, users: 120 },
+        ],
+        channels: [
+          { channel: 'Direct', sessions: 782 },
+          { channel: 'Organic Search', sessions: 641 },
+          { channel: 'Social', sessions: 248 },
+          { channel: 'Referral', sessions: 171 },
+        ],
+      };
+    },
   },
 
   leads: {
@@ -256,11 +281,15 @@ const realApi = {
     createSession: (body: any) => apiFetch<any>('/api/v1/chat/sessions', { method: 'POST', body: JSON.stringify(body) }),
     sessions: (params?: any) => apiFetch<any[]>('/api/v1/chat/sessions', { params }),
     getSession: (id: string) => apiFetch<any>(`/api/v1/chat/sessions/${id}`),
+    getMessages: (id: string, after?: string) => apiFetch<any[]>(`/api/v1/chat/sessions/${id}/messages`, { params: after ? { after } : undefined }),
     join: (id: string) => apiFetch<any>(`/api/v1/chat/sessions/${id}/join`, { method: 'POST' }),
     sendMessage: (id: string, content: string) => apiFetch<any>(`/api/v1/chat/sessions/${id}/messages`, { method: 'POST', body: JSON.stringify({ content }) }),
     close: (id: string) => apiFetch<any>(`/api/v1/chat/sessions/${id}/close`, { method: 'PATCH' }),
     convert: (id: string, subject?: string) => apiFetch<any>(`/api/v1/chat/sessions/${id}/convert`, { method: 'POST', body: JSON.stringify({ subject }) }),
     setAgentStatus: (status: string) => apiFetch<any>('/api/v1/chat/agent-status', { method: 'PATCH', body: JSON.stringify({ status }) }),
+  },
+  analytics: {
+    summary: (params?: { days?: number }) => apiFetch<any>('/api/v1/analytics/summary', { params }),
   },
   appointments: {
     types: () => apiFetch<any[]>('/api/v1/appointments/appointment-types'),

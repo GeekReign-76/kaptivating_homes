@@ -22,9 +22,11 @@ export function ContactSection() {
     setBusy(true);
     setError('');
     try {
-      await api.threads.create({
-        subject:         `Message from ${form.name}`,
-        initial_message: `${form.message}\n\nPhone: ${form.phone || 'N/A'}`,
+      await api.leads.capture({
+        email:   form.email,
+        name:    form.name,
+        source:  'contact_form',
+        context: `${form.message}${form.phone ? `\n\nPhone: ${form.phone}` : ''}`,
       });
       setSent(true);
     } catch {
