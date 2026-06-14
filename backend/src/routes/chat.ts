@@ -11,6 +11,7 @@ import {
   convertToThread,
   getAgentStatus,
 } from '../services/chatService';
+import { authMiddleware, requireAgent as requireAgentMiddleware } from '../middleware/auth';
 import { db } from '../lib/db';
 
 export const chatRouter = Router();
@@ -228,11 +229,7 @@ chatRouter.patch('/agent-status', requireAgent, async (req: Request, res: Respon
 // -------------------------------------------------------------------------
 
 function requireAgent(req: Request, res: Response, next: Function): void {
-  if (!req.user || req.user.role !== 'agent') {
-    res.status(403).json({ data: null, error: { code: 'UNAUTHORIZED', message: 'Agent access required' } });
-    return;
-  }
-  next();
+  authMiddleware(req, res, () => requireAgentMiddleware(req, res, next as any));
 }
 
 function handleError(res: Response, err: any): Response {

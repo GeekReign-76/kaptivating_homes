@@ -54,6 +54,48 @@ export async function createChatSession(params: {
     content:     initialMessage,
   });
 
+  // Capture lead when guest provides an email
+  if (guestEmail) {
+    try {
+      const { data: existingUser } = await db
+        .from('users')
+        .select('id')
+        .eq('email', guestEmail.toLowerCase())
+        .maybeSingle();
+
+      let guestUserId = existingUser?.id;
+
+      if (!guestUserId) {
+        const { data: newUser } = await db
+          .from('users')
+          .insert({ email: guestEmail.toLowerCase(), full_name: guestName ?? null, role: 'client' })
+          .select('id')
+          .single();
+        guestUserId = newUser?.id ?? null;
+      } else if (guestName) {
+        await db.from('users').update({ full_name: guestName }).eq('id', guestUserId).is('full_name', null);
+      }
+
+      if (guestUserId) {
+        // Link session to user
+        await db.from('chat_sessions').update({ user_id: guestUserId }).eq('id', session.id);
+
+        const { data: existingLead } = await db.from('leads').select('id').eq('user_id', guestUserId).maybeSingle();
+        if (!existingLead) {
+          await db.from('leads').insert({
+            user_id: guestUserId,
+            source:  'chat',
+            status:  'warm',
+            notes:   initialMessage ? `First message: ${initialMessage.slice(0, 200)}` : null,
+          });
+        }
+      }
+    } catch (err) {
+      console.error('[chatService] Lead capture error:', err);
+      // Non-blocking — don't fail the chat session
+    }
+  }
+
   const io         = getIO();
   const agentOnline = await isAgentOnline(io);
 
