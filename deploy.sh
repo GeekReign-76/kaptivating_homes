@@ -19,6 +19,9 @@ echo "==> Copying static assets into standalone..."
 cp -r "$APP/frontend/.next/static" "$APP/frontend/.next/standalone/frontend/.next/static"
 cp -r "$APP/frontend/public" "$APP/frontend/.next/standalone/frontend/public"
 
+echo "==> Installing sharp for image optimization..."
+cd "$APP/frontend/.next/standalone" && npm install sharp --no-save
+
 echo "==> Restarting PM2..."
 pm2 start all
 pm2 save
