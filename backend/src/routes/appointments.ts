@@ -127,7 +127,7 @@ appointmentsRouter.post('/public-book', async (req: Request, res: Response) => {
     if (!userId) {
       const { data: newUser, error: userErr } = await db
         .from('users')
-        .insert({ email: email.toLowerCase(), full_name: name ?? null, phone: phone ?? null, role: 'client' })
+        .insert({ id: crypto.randomUUID(), email: email.toLowerCase(), full_name: name ?? null, phone: phone ?? null, role: 'client' })
         .select('id')
         .single();
       if (userErr || !newUser) throw new Error(userErr?.message ?? 'Failed to create user');
@@ -151,10 +151,9 @@ appointmentsRouter.post('/public-book', async (req: Request, res: Response) => {
 
     if (!existingLead) {
       await db.from('leads').insert({
-        user_id: userId,
-        status:  'warm',
-        source:  'appointment_request',
-        notes:   [
+        user_id:     userId,
+        source:      'appointment_request',
+        agent_notes: [
           search_context ? `Context: ${search_context}` : null,
           property_url   ? `Property: ${property_url}`  : null,
           note           ? `Note: ${note}`               : null,
