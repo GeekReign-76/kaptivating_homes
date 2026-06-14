@@ -213,6 +213,13 @@ const mockApi = {
           { channel: 'Social', sessions: 248 },
           { channel: 'Referral', sessions: 171 },
         ],
+        cities: [
+          { city: 'Charlotte', region: 'North Carolina', sessions: 621, users: 410 },
+          { city: 'Raleigh', region: 'North Carolina', sessions: 184, users: 121 },
+          { city: 'New York', region: 'New York', sessions: 143, users: 98 },
+          { city: 'Atlanta', region: 'Georgia', sessions: 112, users: 74 },
+          { city: 'Chicago', region: 'Illinois', sessions: 89, users: 61 },
+        ],
       };
     },
   },

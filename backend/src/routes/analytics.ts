@@ -58,7 +58,7 @@ analyticsRouter.get('/summary', async (req: Request, res: Response) => {
     const accessToken    = await getGoogleAccessToken(serviceAccount);
     const startDate      = `${days}daysAgo`;
 
-    const [totalsResp, pagesResp, channelsResp] = await Promise.all([
+    const [totalsResp, pagesResp, channelsResp, citiesResp] = await Promise.all([
       runGA4Report(accessToken, propertyId, {
         dateRanges: [{ startDate, endDate: 'today' }],
         metrics: [
@@ -83,6 +83,13 @@ analyticsRouter.get('/summary', async (req: Request, res: Response) => {
         limit: 8,
         orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
       }),
+      runGA4Report(accessToken, propertyId, {
+        dateRanges: [{ startDate, endDate: 'today' }],
+        dimensions: [{ name: 'city' }, { name: 'region' }],
+        metrics: [{ name: 'sessions' }, { name: 'totalUsers' }],
+        limit: 15,
+        orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+      }),
     ]);
 
     const totalsRow = totalsResp.rows?.[0]?.metricValues ?? [];
@@ -105,12 +112,22 @@ analyticsRouter.get('/summary', async (req: Request, res: Response) => {
       sessions: parseInt(row.metricValues?.[0]?.value ?? '0', 10),
     }));
 
+    const cities = (citiesResp.rows ?? [])
+      .filter((row: any) => row.dimensionValues?.[0]?.value !== '(not set)')
+      .map((row: any) => ({
+        city:     row.dimensionValues?.[0]?.value ?? 'Unknown',
+        region:   row.dimensionValues?.[1]?.value ?? '',
+        sessions: parseInt(row.metricValues?.[0]?.value ?? '0', 10),
+        users:    parseInt(row.metricValues?.[1]?.value ?? '0', 10),
+      }));
+
     const result = {
       configured: true,
       period: `${days} days`,
       totals,
       topPages,
       channels,
+      cities,
     };
 
     // Cache the result keyed by period

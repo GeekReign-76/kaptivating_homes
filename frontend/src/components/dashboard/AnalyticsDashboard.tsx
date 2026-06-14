@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Users, Eye, MousePointer, Clock, TrendingUp, AlertCircle, ExternalLink } from 'lucide-react';
+import { Users, Eye, MousePointer, Clock, TrendingUp, AlertCircle, ExternalLink, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api }      from '@/lib/apiClient';
@@ -111,7 +111,7 @@ export function AnalyticsDashboard() {
     );
   }
 
-  const { totals, topPages, channels } = data;
+  const { totals, topPages, channels, cities } = data;
   const maxPageViews = Math.max(...(topPages ?? []).map((p: any) => p.views), 1);
   const maxSessions  = Math.max(...(channels ?? []).map((c: any) => c.sessions), 1);
 
@@ -160,6 +160,49 @@ export function AnalyticsDashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Cities */}
+      {cities && cities.length > 0 && (
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold text-neutral-700 flex items-center gap-2">
+              <MapPin className="w-4 h-4" /> Traffic by City
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-neutral-100">
+                  <th className="text-left text-xs font-medium text-neutral-400 px-4 py-2">City</th>
+                  <th className="text-left text-xs font-medium text-neutral-400 px-4 py-2">State</th>
+                  <th className="text-right text-xs font-medium text-neutral-400 px-4 py-2">Sessions</th>
+                  <th className="text-right text-xs font-medium text-neutral-400 px-4 py-2">Users</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cities.map((c: any, i: number) => {
+                  const pct = Math.round((c.sessions / cities[0].sessions) * 100);
+                  return (
+                    <tr key={`${c.city}-${i}`} className="border-b border-neutral-50 last:border-0">
+                      <td className="px-4 py-2.5">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium text-neutral-700">{c.city}</span>
+                          <div className="h-1.5 rounded-full bg-neutral-100 overflow-hidden w-full max-w-[200px]">
+                            <div className="h-full bg-brand-500 rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2.5 text-neutral-500 text-xs">{c.region}</td>
+                      <td className="px-4 py-2.5 text-right font-medium text-neutral-900">{fmtNum(c.sessions)}</td>
+                      <td className="px-4 py-2.5 text-right text-neutral-500">{fmtNum(c.users)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
