@@ -22,8 +22,8 @@ export const analyticsRouter = Router();
 // All analytics endpoints require agent auth
 analyticsRouter.use(authMiddleware, requireAgent);
 
-// Simple in-memory cache to avoid hammering the GA4 API on every page load
-let cache: { data: any; expiresAt: number } | null = null;
+// Simple in-memory cache keyed by period (days) to avoid hammering the GA4 API
+const cache = new Map<number, { data: any; expiresAt: number }>();
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 // -------------------------------------------------------------------------
@@ -48,9 +48,14 @@ analyticsRouter.get('/summary', async (req: Request, res: Response) => {
   }
 
   try {
+    const days   = Math.min(90, Math.max(1, parseInt(req.query.days as string || '30', 10)));
+    const cached = cache.get(days);
+    if (cached && cached.expiresAt > Date.now()) {
+      return res.json({ data: cached.data, error: null });
+    }
+
     const serviceAccount = JSON.parse(serviceAccountRaw);
     const accessToken    = await getGoogleAccessToken(serviceAccount);
-    const days           = Math.min(90, Math.max(1, parseInt(req.query.days as string || '30', 10)));
     const startDate      = `${days}daysAgo`;
 
     const [totalsResp, pagesResp, channelsResp] = await Promise.all([
@@ -108,8 +113,8 @@ analyticsRouter.get('/summary', async (req: Request, res: Response) => {
       channels,
     };
 
-    // Cache the result
-    cache = { data: result, expiresAt: Date.now() + CACHE_TTL_MS };
+    // Cache the result keyed by period
+    cache.set(days, { data: result, expiresAt: Date.now() + CACHE_TTL_MS });
 
     return res.json({ data: result, error: null });
   } catch (err: any) {
