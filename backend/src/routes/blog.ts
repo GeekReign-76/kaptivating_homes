@@ -35,9 +35,8 @@ blogRouter.get('/', async (req: Request, res: Response) => {
 
   let query = db
     .from('blog_posts')
-    .select('id, title, slug, excerpt, cover_image_url, tags, published_at, read_time_minutes', { count: 'exact' })
-    .eq('status', 'published')
-    .is('deleted_at', null)
+    .select('id, title, slug, excerpt, cover_image_url, tags, published_at', { count: 'exact' })
+    .eq('is_published', true)
     .order('published_at', { ascending: false })
     .range(offset, offset + limitNum - 1);
 
@@ -62,9 +61,8 @@ blogRouter.get('/', async (req: Request, res: Response) => {
 blogRouter.get('/drafts', authMiddleware, requireAgent, async (_req: Request, res: Response) => {
   const { data, error } = await db
     .from('blog_posts')
-    .select('id, title, slug, excerpt, tags, status, created_at, updated_at')
-    .eq('status', 'draft')
-    .is('deleted_at', null)
+    .select('id, title, slug, excerpt, tags, is_published, created_at, updated_at')
+    .eq('is_published', false)
     .order('updated_at', { ascending: false });
 
   if (error) return res.status(500).json({ data: null, error: { code: 'SERVER_ERROR', message: error.message } });
@@ -94,7 +92,7 @@ blogRouter.get('/:slug', async (req: Request, res: Response) => {
   }
 
   if (!isAgent) {
-    query = query.eq('status', 'published');
+    query = query.eq('is_published', true);
   }
 
   const { data, error } = await query.single();
@@ -111,7 +109,7 @@ blogRouter.get('/:slug', async (req: Request, res: Response) => {
 // -------------------------------------------------------------------------
 
 blogRouter.post('/', authMiddleware, requireAgent, async (req: Request, res: Response) => {
-  const { title, content_json, content_html, excerpt, cover_image_url, tags, read_time_minutes } = req.body;
+  const { title, content, content_html, excerpt, cover_image_url, tags } = req.body;
 
   if (!title?.trim()) {
     return res.status(400).json({ data: null, error: { code: 'VALIDATION_ERROR', message: 'title is required' } });
@@ -122,15 +120,14 @@ blogRouter.post('/', authMiddleware, requireAgent, async (req: Request, res: Res
   const { data, error } = await db
     .from('blog_posts')
     .insert({
-      title:              title.trim(),
+      title:           title.trim(),
       slug,
-      content_json:       content_json    ?? null,
-      content_html:       content_html    ?? null,
-      excerpt:            excerpt         ?? null,
-      cover_image_url:    cover_image_url ?? null,
-      tags:               tags            ?? [],
-      read_time_minutes:  read_time_minutes ?? null,
-      status:             'draft',
+      content:         content         ?? {},
+      content_html:    content_html    ?? null,
+      excerpt:         excerpt         ?? null,
+      cover_image_url: cover_image_url ?? null,
+      tags:            tags            ?? [],
+      is_published:    false,
     })
     .select()
     .single();
@@ -150,7 +147,7 @@ blogRouter.post('/', authMiddleware, requireAgent, async (req: Request, res: Res
 // -------------------------------------------------------------------------
 
 blogRouter.patch('/:id', authMiddleware, requireAgent, async (req: Request, res: Response) => {
-  const allowed = ['title', 'content_json', 'content_html', 'excerpt', 'cover_image_url', 'tags', 'read_time_minutes'];
+  const allowed = ['title', 'content', 'content_html', 'excerpt', 'cover_image_url', 'tags'];
   const updates: Record<string, unknown> = {};
   for (const key of allowed) {
     if (key in req.body) updates[key] = req.body[key];
@@ -171,7 +168,6 @@ blogRouter.patch('/:id', authMiddleware, requireAgent, async (req: Request, res:
     .from('blog_posts')
     .update(updates)
     .eq('id', req.params.id)
-    .is('deleted_at', null)
     .select()
     .single();
 
@@ -189,11 +185,10 @@ blogRouter.patch('/:id', authMiddleware, requireAgent, async (req: Request, res:
 blogRouter.patch('/:id/publish', authMiddleware, requireAgent, async (req: Request, res: Response) => {
   const { data, error } = await db
     .from('blog_posts')
-    .update({ status: 'published', published_at: new Date().toISOString() })
+    .update({ is_published: true, published_at: new Date().toISOString() })
     .eq('id', req.params.id)
-    .eq('status', 'draft')
-    .is('deleted_at', null)
-    .select('id, title, slug, status, published_at')
+    .eq('is_published', false)
+    .select('id, title, slug, is_published, published_at')
     .single();
 
   if (error || !data) {
@@ -210,11 +205,10 @@ blogRouter.patch('/:id/publish', authMiddleware, requireAgent, async (req: Reque
 blogRouter.patch('/:id/unpublish', authMiddleware, requireAgent, async (req: Request, res: Response) => {
   const { data, error } = await db
     .from('blog_posts')
-    .update({ status: 'draft' })
+    .update({ is_published: false })
     .eq('id', req.params.id)
-    .eq('status', 'published')
-    .is('deleted_at', null)
-    .select('id, title, status')
+    .eq('is_published', true)
+    .select('id, title, is_published')
     .single();
 
   if (error || !data) {
@@ -231,7 +225,7 @@ blogRouter.patch('/:id/unpublish', authMiddleware, requireAgent, async (req: Req
 blogRouter.delete('/:id', authMiddleware, requireAgent, async (req: Request, res: Response) => {
   const { error } = await db
     .from('blog_posts')
-    .update({ deleted_at: new Date().toISOString(), status: 'draft' })
+    .delete()
     .eq('id', req.params.id);
 
   if (error) return res.status(500).json({ data: null, error: { code: 'SERVER_ERROR', message: error.message } });

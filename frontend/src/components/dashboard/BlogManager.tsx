@@ -28,14 +28,14 @@ export function BlogManager() {
     await api.blog.unpublish(id);
     const post = published.find((p: any) => p.id === id);
     setPublished(prev => prev.filter((p: any) => p.id !== id));
-    if (post) setDrafts(prev => [{ ...post, status: 'draft' }, ...prev]);
+    if (post) setDrafts(prev => [{ ...post, is_published: false }, ...prev]);
   }
 
   async function publish(id: string) {
     const res = await api.blog.publish(id);
     const post = drafts.find((p: any) => p.id === id);
     setDrafts(prev => prev.filter((p: any) => p.id !== id));
-    if (post) setPublished(prev => [{ ...post, ...res, status: 'published' }, ...prev]);
+    if (post) setPublished(prev => [{ ...post, ...res, is_published: true }, ...prev]);
   }
 
   async function deletePost(id: string, isPublished: boolean) {
