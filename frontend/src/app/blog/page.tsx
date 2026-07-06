@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://kaptivatinghomesbykarsten.com/blog' },
 };
 
-export const revalidate = 600;
+export const dynamic = 'force-dynamic';
 
 export default async function BlogPage() {
   // Fetch both sources in parallel

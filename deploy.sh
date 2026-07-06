@@ -12,6 +12,10 @@ pm2 stop all
 echo "==> Building backend..."
 cd "$APP/backend" && npm run build
 
+echo "==> Starting API so frontend build can reach it..."
+pm2 start "$APP/backend/dist/server.js" --name api 2>/dev/null || pm2 restart api
+sleep 3
+
 echo "==> Building frontend..."
 cd "$APP/frontend" && npm run build
 
