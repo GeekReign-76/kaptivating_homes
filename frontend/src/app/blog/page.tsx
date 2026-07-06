@@ -24,14 +24,14 @@ export const dynamic = 'force-dynamic';
 
 export default async function BlogPage() {
   // Fetch both sources in parallel
-  const [{ data: inAppPosts }, wpPosts] = await Promise.all([
-    apiClient.blog.list({ limit: 24 }).catch(() => ({ data: [] })),
+  const [inAppPosts, wpPosts] = await Promise.all([
+    apiClient.blog.list({ limit: 24 }).catch(() => []),
     fetchWordPressPosts(),
   ]);
 
   // Merge and sort by date descending
   const allPosts = [
-    ...(inAppPosts ?? []),
+    ...(Array.isArray(inAppPosts) ? inAppPosts : []),
     ...wpPosts,
   ].sort((a, b) => {
     const dateA = new Date(a.published_at ?? 0).getTime();
