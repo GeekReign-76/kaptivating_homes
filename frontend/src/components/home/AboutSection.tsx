@@ -16,7 +16,7 @@ export function AboutSection() {
                 src="/km_headshot.png"
                 alt="Karsten Miller — REALTOR®, Keller Williams Realty Ballantyne"
                 fill
-                className="object-cover object-center"
+                className="object-cover object-top"
                 sizes="(max-width: 768px) 100vw, 384px"
               />
             </div>

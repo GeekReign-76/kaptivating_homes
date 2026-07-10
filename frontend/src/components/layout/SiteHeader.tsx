@@ -87,11 +87,11 @@ export function SiteHeader() {
           {/* Logo */}
           <Link href="/" className="flex-shrink-0 flex items-center gap-2.5 hover:opacity-90 transition-opacity">
             <Image
-              src="/kh_logo.jpeg"
-              alt={SITE_NAME}
-              width={44}
+              src="/kw-ballantyne-logo.png"
+              alt="Keller Williams Charlotte Ballantyne Area"
+              width={120}
               height={44}
-              className="rounded-full object-cover"
+              className="object-contain"
               priority
             />
             <span className="font-serif font-bold text-lg text-neutral-900 leading-tight hidden sm:block">
