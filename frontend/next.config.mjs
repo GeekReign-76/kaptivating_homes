@@ -44,6 +44,12 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'cflare.smarteragent.com',
       },
+      {
+        // GCS bucket backing KW/SmartAgent listing media (direct, publicly readable)
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
+        pathname: '/slp5-stream-listing-media-prod/**',
+      },
     ],
   },
 
