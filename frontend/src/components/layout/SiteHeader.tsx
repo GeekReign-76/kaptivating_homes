@@ -75,7 +75,7 @@ export function SiteHeader() {
             <Phone className="w-3 h-3" />
             <span>Office: {PHONE_OFFICE}</span>
           </a>
-          <span className="text-brand-300">License #: {LICENSE.replace(/^.*#\s*/, '')}</span>
+          <span className="text-brand-300 hidden sm:block">License #: {LICENSE.replace(/^.*#\s*/, '')}</span>
         </div>
       </div>
 
@@ -91,7 +91,7 @@ export function SiteHeader() {
               alt="Keller Williams Charlotte Ballantyne Area"
               width={120}
               height={44}
-              className="object-contain"
+              className="object-contain h-8 w-24 sm:h-11 sm:w-32"
               priority
             />
             <span className="font-serif font-bold text-lg text-neutral-900 leading-tight hidden sm:block">
