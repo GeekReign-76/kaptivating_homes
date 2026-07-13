@@ -175,7 +175,9 @@ async function getGoogleAccessToken(serviceAccount: any): Promise<string> {
   const unsigned = `${b64url({ alg: 'RS256', typ: 'JWT' })}.${b64url(claim)}`;
 
   // Import the service account private key
-  const pemBody   = serviceAccount.private_key
+  // Normalize escaped newlines (common when storing JSON in env vars)
+  const privateKey = serviceAccount.private_key.replace(/\\n/g, '\n');
+  const pemBody   = privateKey
     .replace(/-----BEGIN PRIVATE KEY-----\n?/, '')
     .replace(/-----END PRIVATE KEY-----\n?/, '')
     .replace(/\n/g, '');
