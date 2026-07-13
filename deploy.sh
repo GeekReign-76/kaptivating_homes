@@ -9,6 +9,9 @@ cd "$APP" && git pull
 echo "==> Stopping PM2..."
 pm2 stop all
 
+echo "==> Installing backend dependencies..."
+cd "$APP/backend" && npm install
+
 echo "==> Building backend..."
 cd "$APP/backend" && npm run build
 
