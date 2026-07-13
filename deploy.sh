@@ -19,6 +19,9 @@ echo "==> Starting API so frontend build can reach it..."
 pm2 start "$APP/backend/dist/server.js" --name api 2>/dev/null || pm2 restart api
 sleep 3
 
+echo "==> Installing frontend dependencies..."
+cd "$APP/frontend" && npm install
+
 echo "==> Building frontend..."
 cd "$APP/frontend" && npm run build
 
