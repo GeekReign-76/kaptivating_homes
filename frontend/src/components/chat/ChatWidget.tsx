@@ -93,7 +93,7 @@ export function ChatWidget() {
         setStage('offline');
         setMsgs([
           ...newMsgs,
-          { role: 'system', content: "Your message has been sent! I'm not available right now but I'll get back to you within a few hours." },
+          { role: 'system', content: "Your message has been received and is waiting for me! I'm currently away but I personally respond to every message — you'll hear from me soon." },
         ]);
       }
     } catch {
@@ -164,7 +164,7 @@ export function ChatWidget() {
           <div className="flex-1 overflow-y-auto">
             {stage === 'form' && (
               <div className="p-4 space-y-3">
-                <p className="text-sm text-neutral-600">Hi! Send me a message and I'll get back to you as soon as possible.</p>
+                <p className="text-sm text-neutral-600">{status === 'offline' ? "I'm away right now but don't let that stop you — leave me a message and I'll personally get back to you. Every message comes straight to me." : "Hi! Send me a message and I'll get back to you as soon as possible."}</p>
                 <Input placeholder="Your name (optional)" value={name} onChange={e => setName(e.target.value)} />
                 <Input type="email" placeholder="Your email (optional)" value={email} onChange={e => setEmail(e.target.value)} />
                 <textarea
@@ -219,7 +219,7 @@ export function ChatWidget() {
 
           {stage === 'offline' && (
             <div className="p-3 border-t border-neutral-100 text-center">
-              <p className="text-xs text-neutral-400">We'll email you when we respond.</p>
+              <p className="text-xs text-neutral-400">Available daily 7am–7pm ET. I'll reply as soon as I'm back.</p>
             </div>
           )}
         </div>

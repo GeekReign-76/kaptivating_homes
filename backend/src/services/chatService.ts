@@ -355,20 +355,28 @@ export async function convertToThread(params: {
 // -------------------------------------------------------------------------
 
 export async function getAgentStatus(): Promise<{ status: 'online' | 'away' | 'offline' }> {
-  const io = getIO();
-  const online = await isAgentOnline(io);
-
-  if (!online) return { status: 'offline' };
-
-  // Check manual away toggle from agent_settings
+  // Check manual status override from agent_settings first
   const { data: setting } = await db
     .from('agent_settings')
     .select('value')
     .eq('key', 'chat_status')
     .single();
 
-  if (setting?.value === 'away') return { status: 'away' };
-  return { status: 'online' };
+  // Manual override takes priority over schedule
+  if (setting?.value === 'online') return { status: 'online' };
+  if (setting?.value === 'away')   return { status: 'away' };
+
+  // Schedule: online 7am–7pm Eastern time, offline otherwise
+  const etHour = parseInt(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      hour:     'numeric',
+      hour12:   false,
+    }).format(new Date()),
+    10,
+  );
+  const withinHours = etHour >= 7 && etHour < 19;
+  return { status: withinHours ? 'online' : 'offline' };
 }
 
 // -------------------------------------------------------------------------
