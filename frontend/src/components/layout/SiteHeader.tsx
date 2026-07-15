@@ -18,7 +18,7 @@ const NAV_LINKS = [
   { label: 'Blog',               href: '/blog'       },
 ];
 
-const SITE_NAME    = process.env.NEXT_PUBLIC_SITE_NAME            ?? 'KaptivatingHomes';
+const SITE_NAME    = process.env.NEXT_PUBLIC_SITE_NAME            ?? 'Keller Williams Ballantyne Licensed Agent';
 const AGENT_PHONE  = process.env.NEXT_PUBLIC_AGENT_PHONE          ?? '(336) 804-9760';
 const PHONE_OFFICE = process.env.NEXT_PUBLIC_AGENT_PHONE_OFFICE   ?? '(704) 887-6600';
 const LICENSE      = process.env.NEXT_PUBLIC_AGENT_LICENSE        ?? 'NC #279290';
